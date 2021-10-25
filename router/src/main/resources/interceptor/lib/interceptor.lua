@@ -56,7 +56,14 @@ local INV_CONTEXT = {
     REQ_ID = "requestId",
     SOURCE = "source",
     DESTINATION = "destination",
-    ENFORCER_DENIED = "enforcerDenied"
+    ENFORCER_DENIED = "enforcerDenied",
+    AUTH_CTX = "authenticationContext"
+}
+
+-- keys of the payload to the auth context
+local AUTH_CTX = {
+    TOKEN = "token",
+    TYPE = "type"
 }
 
 -- keys of the payload from the interceptor service
@@ -79,6 +86,7 @@ local SHARED = {
 -- envoy headers
 local STATUS = ":status"
 local FILTER_NAME = "envoy.filters.http.lua"
+local EXT_AUTHZ_FILTER = "envoy.filters.http.ext_authz"
 local SHARED_INFO_META_KEY = "shared.info"
 
 local function direct_respond(handle, headers, body, shared_info)
@@ -109,7 +117,7 @@ end
 local function respond_error(handle, shared_info, request_id, error_info, is_request_flow)
     local resp_body = '{"error_message": "' .. error_info.error_message .. '", "error_description": "' .. error_info.error_description ..
         '", "code": "' .. error_info.error_code .. '"}'
-    
+
     --#region request flow
     if is_request_flow then
         direct_respond(
@@ -132,7 +140,7 @@ local function respond_error(handle, shared_info, request_id, error_info, is_req
         backend_headers:remove(key)
     end
     backend_headers:add(STATUS, "500")
-    
+
     local content_length = handle:body():setBytes(resp_body)
     handle:headers():replace("content-length", content_length)
     return
@@ -278,7 +286,7 @@ local function check_interceptor_call_errors(handle, headers, body_str, shared_i
 
     local message = 'HTTP status_code: "' .. headers[STATUS] ..'", response_body: "' .. body_str
     log_interceptor_service_error(handle, request_id, is_request_flow, message)
-    
+
     respond_error(handle, shared_info, request_id, {
             error_message = "Internal Server Error",
             error_description = "Internal Server Error",
@@ -344,6 +352,16 @@ local function include_invocation_context(handle, req_flow_includes, resp_flow_i
         inv_context[INV_CONTEXT.SOURCE] = client_ip
         -- inv_context[INV_CONTEXT.DESTINATION] = handle:streamInfo():downstreamLocalAddress() -- TODO: (renuka) check this
         inv_context[INV_CONTEXT.ENFORCER_DENIED] = false
+
+        --#region auth context
+        local ext_authz_meta =  handle:streamInfo():dynamicMetadata():get(EXT_AUTHZ_FILTER)
+        if ext_authz_meta then
+            inv_context[INV_CONTEXT.AUTH_CTX] = {
+                [AUTH_CTX.TYPE] = ext_authz_meta["type"],
+                [AUTH_CTX.TOKEN] = ext_authz_meta["token"]
+            }
+        end
+        --#endregion
         --#endregion
     end
     if req_flow_includes[INCLUDES.INV_CONTEXT] then
@@ -358,7 +376,7 @@ local function handle_direct_respond(handle, interceptor_response_body, shared_i
     if interceptor_response_body[RESPONSE.DIRECT_RESPOND] then
         handle:logDebug("Directly responding without calling the backend for request_id: " .. request_id)
         local headers = interceptor_response_body[RESPONSE.HEADERS_TO_ADD] or {}
-        
+
         -- if interceptor_response_body.body is nil send empty, do not send client its payload back
         local body = interceptor_response_body.body or ""
         if body == "" then
@@ -406,7 +424,7 @@ function interceptor.handle_request_interceptor(request_handle, intercept_servic
         shared_info[REQUEST.REQ_HEADERS] = request_headers_table
     end
     --#endregion
-    
+
     --#region read request body and update shared_info
     local request_body_base64
     if req_flow_includes[INCLUDES.REQ_BODY] or resp_flow_includes[INCLUDES.REQ_BODY] then

@@ -36,6 +36,7 @@ import java.util.Map;
 public class InterceptorBaseTestCase {
     static final String INVOCATION_CONTEXT = "invocationContext";
     static final String INTERCEPTOR_CONTEXT = "interceptorContext";
+    static final String AUTH_CONTEXT = "authenticationContext";
 
     String jwtTokenProd;
     String apiName;

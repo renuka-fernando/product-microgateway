@@ -136,6 +136,10 @@ public class InterceptorServiceRequestBodyTestCase extends InterceptorBaseTestCa
         Assert.assertTrue(StringUtils.isNotEmpty(invocationCtx.getString("source")), "Source not found");
         Assert.assertTrue(StringUtils.isNotEmpty(invocationCtx.getString("requestId")), "Request ID not found");
         Assert.assertEquals(Arrays.asList(invocationCtx.getString("supportedMethods").split(" ")), supportedMethods, "HTTP supported method mismatch");
+
+        JSONObject authContext = invocationCtx.getJSONObject(AUTH_CONTEXT);
+        Assert.assertEquals(authContext.getString("type"), "JWT", "Auth context, token type mismatched");
+        Assert.assertEquals(authContext.getString("token"), jwtTokenProd, "Auth context, token mismatched");
     }
 
     void testInterceptorHeaders(JSONObject bodyJSON, Map<String, String> expectedHeaders, boolean isRequestFlow) {
