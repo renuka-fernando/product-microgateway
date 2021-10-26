@@ -277,12 +277,12 @@ func CreateRoutesWithClusters(mgwSwagger model.MgwSwagger, upstreamCerts []byte,
 		}
 
 		routeP := createRoute(genRouteCreateParams(&mgwSwagger, &resource, vHost, endpointBasepath, clusterRefProd,
-			clusterRefSand, resourceRequestInterceptor, resourceResponseInterceptor))
+			clusterRefSand, resourceRequestInterceptor, resourceResponseInterceptor, organizationID))
 		routes = append(routes, routeP)
 	}
 	if mgwSwagger.GetAPIType() == mgw.WS {
 		routesP := createRoute(genRouteCreateParams(&mgwSwagger, nil, vHost, apiEndpointBasePath, apilevelClusterProd.GetName(),
-			apilevelClusterSand.GetName(), apiRequestInterceptor, apiResponseInterceptor))
+			apilevelClusterSand.GetName(), apiRequestInterceptor, apiResponseInterceptor, organizationID))
 		routes = append(routes, routesP)
 	}
 	return routes, clusters, endpoints
@@ -611,6 +611,7 @@ func createRoute(params *routeCreateParams) *routev3.Route {
 		// read from contextExtensions map since, it is updated with correct values with conditions
 		// so, no need to change two places
 		iInvCtx := &interceptor.InvocationContext{
+			OrganizationID:   params.organizationID,
 			BasePath:         contextExtensions[basePathContextExtension],
 			SupportedMethods: contextExtensions[methodContextExtension],
 			APIName:          contextExtensions[apiNameContextExtension],
@@ -1064,18 +1065,19 @@ func getCorsPolicy(corsConfig *model.CorsConfig) *routev3.CorsPolicy {
 
 func genRouteCreateParams(swagger *model.MgwSwagger, resource *model.Resource, vHost, endpointBasePath string,
 	prodClusterName string, sandClusterName string, requestInterceptor model.InterceptEndpoint,
-	responseInterceptor model.InterceptEndpoint) *routeCreateParams {
+	responseInterceptor model.InterceptEndpoint, organizationID string) *routeCreateParams {
 	params := &routeCreateParams{
-		title:               swagger.GetTitle(),
-		apiType:             swagger.GetAPIType(),
-		version:             swagger.GetVersion(),
-		vHost:               vHost,
-		xWSO2BasePath:       swagger.GetXWso2Basepath(),
-		AuthHeader:          swagger.GetXWSO2AuthHeader(),
-		prodClusterName:     prodClusterName,
-		sandClusterName:     sandClusterName,
-		endpointBasePath:    endpointBasePath,
-		corsPolicy:          swagger.GetCorsConfig(),
+		organizationID:   organizationID,
+		title:            swagger.GetTitle(),
+		apiType:          swagger.GetAPIType(),
+		version:          swagger.GetVersion(),
+		vHost:            vHost,
+		xWSO2BasePath:    swagger.GetXWso2Basepath(),
+		AuthHeader:       swagger.GetXWSO2AuthHeader(),
+		prodClusterName:  prodClusterName,
+		sandClusterName:  sandClusterName,
+		endpointBasePath: endpointBasePath,
+		corsPolicy:       swagger.GetCorsConfig(),
 		resourcePathParam:   "",
 		resourceMethods:     getDefaultResourceMethods(swagger.GetAPIType()),
 		requestInterceptor:  requestInterceptor,
