@@ -31,6 +31,7 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
 import java.security.KeyStore;
+import java.util.Date;
 import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -267,6 +268,15 @@ public class MockBackEndServer extends Thread {
                     respondWithBodyAndClose(HttpURLConnection.HTTP_OK, response, exchange);
                 }
             });
+            httpServer.createContext(context + "/req-cb", exchange -> {
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException e) {
+                    logger.log(Level.SEVERE, "Error occurred while thread sleep", e);
+                }
+                byte[] response = ResponseConstants.RESPONSE_BODY.getBytes();
+                respondWithBodyAndClose(HttpURLConnection.HTTP_OK, response, exchange);
+            });
             httpServer.createContext(context + "/headers", exchange -> {
                 JSONObject responseJSON = new JSONObject();
                 exchange.getRequestHeaders().forEach((key,values) -> {
@@ -292,16 +302,8 @@ public class MockBackEndServer extends Thread {
             // sent request headers in response headers <- this is because in interceptor tests it is required to test
             //                                             response flow headers to interceptor service
             // sent request body in response body
-            httpServer.createContext(context + "/echo", exchange -> {
-                byte[] response;
-                String requestBody = Utils.requestBodyToString(exchange);
-                response = requestBody.getBytes();
-                exchange.getResponseHeaders().putAll(exchange.getRequestHeaders());
-                int respCode = response.length == 0 ? HttpURLConnection.HTTP_NO_CONTENT : HttpURLConnection.HTTP_OK;
-                exchange.sendResponseHeaders(respCode, response.length);
-                exchange.getResponseBody().write(response);
-                exchange.close();
-            });
+            httpServer.createContext(context + "/echo", Utils::echo);
+
             httpServer.start();
             backEndServerUrl = "http://localhost:" + backEndServerPort;
         } catch (Exception ex) {

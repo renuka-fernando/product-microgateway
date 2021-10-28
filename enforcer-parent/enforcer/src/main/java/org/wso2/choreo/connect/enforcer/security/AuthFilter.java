@@ -31,6 +31,7 @@ import org.wso2.choreo.connect.enforcer.config.ConfigHolder;
 import org.wso2.choreo.connect.enforcer.constants.APIConstants;
 import org.wso2.choreo.connect.enforcer.constants.APISecurityConstants;
 import org.wso2.choreo.connect.enforcer.constants.AdapterConstants;
+import org.wso2.choreo.connect.enforcer.constants.InterceptorConstants;
 import org.wso2.choreo.connect.enforcer.exception.APISecurityException;
 import org.wso2.choreo.connect.enforcer.security.jwt.APIKeyAuthenticator;
 import org.wso2.choreo.connect.enforcer.security.jwt.InternalAPIKeyAuthenticator;
@@ -42,6 +43,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * This is the filter handling the authentication for the requests flowing through the gateway.
@@ -128,6 +130,7 @@ public class AuthFilter implements Filter {
                 canAuthenticated = true;
                 AuthenticationResponse authenticateResponse = authenticate(authenticator, requestContext);
                 if (authenticateResponse.isAuthenticated() && !authenticateResponse.isContinueToNextAuthenticator()) {
+                    setInterceptorAuthContextMetadata(authenticator, requestContext);
                     return true;
                 }
             }
@@ -246,5 +249,16 @@ public class AuthFilter implements Filter {
                 Integer.toString(retryConfig.getCount()));
         requestContext.addOrModifyHeaders(AdapterConstants.HttpRouterHeaders.RETRIABLE_STATUS_CODES,
                 StringUtils.join(retryConfig.getStatusCodes(), ","));
+    }
+
+    private void setInterceptorAuthContextMetadata(Authenticator authenticator, RequestContext requestContext) {
+        // add auth context to metadata, lua script will add it to the auth context of the interceptor
+        AuthenticationContext authContext = requestContext.getAuthenticationContext();
+        requestContext.addMetadataToMap(InterceptorConstants.AuthContextFields.TOKEN_TYPE,
+                Objects.toString(authenticator.getName(), ""));
+        requestContext.addMetadataToMap(InterceptorConstants.AuthContextFields.TOKEN,
+                Objects.toString(authContext.getRawToken(), ""));
+        requestContext.addMetadataToMap(InterceptorConstants.AuthContextFields.KEY_TYPE,
+                Objects.toString(authContext.getKeyType(), ""));
     }
 }

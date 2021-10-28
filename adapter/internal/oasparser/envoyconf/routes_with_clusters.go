@@ -277,12 +277,12 @@ func CreateRoutesWithClusters(mgwSwagger model.MgwSwagger, upstreamCerts []byte,
 		}
 
 		routeP := createRoute(genRouteCreateParams(&mgwSwagger, &resource, vHost, endpointBasepath, clusterRefProd,
-			clusterRefSand, resourceRequestInterceptor, resourceResponseInterceptor))
+			clusterRefSand, resourceRequestInterceptor, resourceResponseInterceptor, organizationID))
 		routes = append(routes, routeP)
 	}
 	if mgwSwagger.GetAPIType() == mgw.WS {
 		routesP := createRoute(genRouteCreateParams(&mgwSwagger, nil, vHost, apiEndpointBasePath, apilevelClusterProd.GetName(),
-			apilevelClusterSand.GetName(), apiRequestInterceptor, apiResponseInterceptor))
+			apilevelClusterSand.GetName(), apiRequestInterceptor, apiResponseInterceptor, organizationID))
 		routes = append(routes, routesP)
 	}
 	return routes, clusters, endpoints
@@ -383,6 +383,32 @@ func createCluster(clusterName string, clusterDetails *model.EndpointCluster, up
 		HealthChecks:           createHealthCheck(),
 		TransportSocketMatches: transportSocketMatches,
 	}
+
+	if clusterDetails.Config != nil && clusterDetails.Config.CircuitBreakers != nil {
+		config := clusterDetails.Config.CircuitBreakers
+		thresholds := &clusterv3.CircuitBreakers_Thresholds{}
+		if config.MaxConnections > 0 {
+			thresholds.MaxConnections = wrapperspb.UInt32(uint32(config.MaxConnections))
+		}
+		if config.MaxConnectionPools > 0 {
+			thresholds.MaxConnectionPools = wrapperspb.UInt32(uint32(config.MaxConnectionPools))
+		}
+		if config.MaxPendingRequests > 0 {
+			thresholds.MaxPendingRequests = wrapperspb.UInt32(uint32(config.MaxPendingRequests))
+		}
+		if config.MaxRequests > 0 {
+			thresholds.MaxRequests = wrapperspb.UInt32(uint32(config.MaxRequests))
+		}
+		if config.MaxRetries > 0 {
+			thresholds.MaxRetries = wrapperspb.UInt32(uint32(config.MaxRetries))
+		}
+		cluster.CircuitBreakers = &clusterv3.CircuitBreakers{
+			Thresholds: []*clusterv3.CircuitBreakers_Thresholds{
+				thresholds,
+			},
+		}
+	}
+
 	return &cluster, addresses
 }
 
@@ -611,6 +637,7 @@ func createRoute(params *routeCreateParams) *routev3.Route {
 		// read from contextExtensions map since, it is updated with correct values with conditions
 		// so, no need to change two places
 		iInvCtx := &interceptor.InvocationContext{
+			OrganizationID:   params.organizationID,
 			BasePath:         contextExtensions[basePathContextExtension],
 			SupportedMethods: contextExtensions[methodContextExtension],
 			APIName:          contextExtensions[apiNameContextExtension],
@@ -1050,8 +1077,9 @@ func getCorsPolicy(corsConfig *model.CorsConfig) *routev3.CorsPolicy {
 
 func genRouteCreateParams(swagger *model.MgwSwagger, resource *model.Resource, vHost, endpointBasePath string,
 	prodClusterName string, sandClusterName string, requestInterceptor model.InterceptEndpoint,
-	responseInterceptor model.InterceptEndpoint) *routeCreateParams {
+	responseInterceptor model.InterceptEndpoint, organizationID string) *routeCreateParams {
 	params := &routeCreateParams{
+		organizationID:      organizationID,
 		title:               swagger.GetTitle(),
 		apiType:             swagger.GetAPIType(),
 		version:             swagger.GetVersion(),
