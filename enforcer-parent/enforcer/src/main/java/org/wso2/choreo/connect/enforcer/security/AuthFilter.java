@@ -198,7 +198,7 @@ public class AuthFilter implements Filter {
             } else if (keyType.equalsIgnoreCase(APIConstants.API_KEY_TYPE_SANDBOX)) {
                 throw new APISecurityException(APIConstants.StatusCodes.UNAUTHENTICATED.getCode(),
                         APISecurityConstants.API_AUTH_INVALID_CREDENTIALS,
-                        "Sandbox key offered to the API with no sandbox endpoint");
+                        "Sandbox key offered to an API with no sandbox endpoint");
             }
             throw new APISecurityException(APIConstants.StatusCodes.UNAUTHENTICATED.getCode(),
                     APISecurityConstants.API_AUTH_INVALID_CREDENTIALS, "Invalid key type.");
