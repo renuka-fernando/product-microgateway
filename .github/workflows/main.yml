@@ -42,7 +42,36 @@ jobs:
           docker pull testcontainers/ryuk:0.3.0
           export `go env | grep GOPATH`
           export PATH="${GOPATH}/bin:${PATH}"
+      - name: Extract Maven project version
+        run: echo ::set-output name=version::$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+        id: extract-project-version
+      - name: Print Maven project version
+        run: echo ${{ steps.extract-project-version.outputs.version }}
       - name: Build with Maven
         run: |
           export PATH="${HOME}/go/bin:${PATH}"
           mvn clean install -PRelease -s .maven/settings.xml
+      - name: Run Trivy vulnerability scanner - Adapter
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'wso2/choreo-connect-adapter:${{ steps.extract-project-version.outputs.version }}'
+          format: 'table'
+          exit-code: '1'
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH,MEDIUM'
+      - name: Run Trivy vulnerability scanner - Enforcer
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'wso2/choreo-connect-enforcer:${{ steps.extract-project-version.outputs.version }}'
+          format: 'table'
+          exit-code: '1'
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH,MEDIUM'
+      - name: Run Trivy vulnerability scanner - Router
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'wso2/choreo-connect-router:${{ steps.extract-project-version.outputs.version }}'
+          format: 'table'
+          exit-code: '1'
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH,MEDIUM'
