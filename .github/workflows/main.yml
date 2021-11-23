@@ -62,15 +62,15 @@ jobs:
           wget https://github.com/aquasecurity/trivy/releases/download/v0.21.0/trivy_0.21.0_Linux-64bit.tar.gz
           tar -xzf trivy_0.21.0_Linux-64bit.tar.gz
           echo "$(pwd)" >> $GITHUB_PATH
-      - name: Trivy Scan - Adapter
+      - name: Trivy Scan
         run: |
-          trivy --exit-code 1 --severity CRITICAL,HIGH,MEDIUM wso2/choreo-connect-adapter:${{ steps.extract-project-version.outputs.version }}
-      - name: Trivy Scan - Enforcer
-        run: |
-          trivy --exit-code 1 --severity CRITICAL,HIGH,MEDIUM wso2/choreo-connect-enforcer:${{ steps.extract-project-version.outputs.version }}
-      - name: Trivy Scan - Router
-        run: |
-          trivy --exit-code 1 --severity CRITICAL,HIGH,MEDIUM wso2/choreo-connect-router:${{ steps.extract-project-version.outputs.version }}
+          TAG=${{ steps.extract-project-version.outputs.version }}
+          SEVERITY="CRITICAL,HIGH,MEDIUM"
+          EXIT_CODE=0
+          trivy --exit-code 1 --severity "${SEVERITY}" wso2/choreo-connect-adapter:$TAG || EXIT_CODE=$?
+          trivy --exit-code 1 --severity "${SEVERITY}" wso2/choreo-connect-enforcer:$TAG || EXIT_CODE=$?
+          trivy --exit-code 1 --severity "${SEVERITY}" wso2/choreo-connect-router:$TAG || EXIT_CODE=$?
+          exit EXIT_CODE
 
 
       - name: Run Trivy vulnerability scanner - Adapter
