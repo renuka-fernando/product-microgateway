@@ -57,6 +57,23 @@ jobs:
         run: |
           export PATH="${HOME}/go/bin:${PATH}"
           mvn clean install -PRelease -s .maven/settings.xml
+      - name: Setup Trivy
+        run: |
+          wget https://github.com/aquasecurity/trivy/releases/download/v0.21.0/trivy_0.21.0_Linux-64bit.tar.gz
+          tar -xzf trivy_0.21.0_Linux-64bit.tar.gz
+          echo "$(pwd)/trivy" >> $GITHUB_PATH
+
+      - name: Trivy Scan - Adapter
+        run: |
+          trivy --exit-code 1 --severity CRITICAL,HIGH,MEDIUM wso2/choreo-connect-adapter::${{ steps.extract-project-version.outputs.version }}
+      - name: Trivy Scan - Enforcer
+        run: |
+          trivy --exit-code 1 --severity CRITICAL,HIGH,MEDIUM wso2/choreo-connect-enforcer::${{ steps.extract-project-version.outputs.version }}
+      - name: Trivy Scan - Router
+        run: |
+          trivy --exit-code 1 --severity CRITICAL,HIGH,MEDIUM wso2/choreo-connect-router::${{ steps.extract-project-version.outputs.version }}
+
+
       - name: Run Trivy vulnerability scanner - Adapter
         uses: aquasecurity/trivy-action@0.1.0
         with:
