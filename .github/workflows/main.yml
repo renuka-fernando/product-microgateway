@@ -64,13 +64,13 @@ jobs:
           echo "$(pwd)" >> $GITHUB_PATH
       - name: Trivy Scan - Adapter
         run: |
-          trivy --exit-code 1 --severity CRITICAL,HIGH,MEDIUM wso2/choreo-connect-adapter::${{ steps.extract-project-version.outputs.version }}
+          trivy --exit-code 1 --severity CRITICAL,HIGH,MEDIUM wso2/choreo-connect-adapter:${{ steps.extract-project-version.outputs.version }}
       - name: Trivy Scan - Enforcer
         run: |
-          trivy --exit-code 1 --severity CRITICAL,HIGH,MEDIUM wso2/choreo-connect-enforcer::${{ steps.extract-project-version.outputs.version }}
+          trivy --exit-code 1 --severity CRITICAL,HIGH,MEDIUM wso2/choreo-connect-enforcer:${{ steps.extract-project-version.outputs.version }}
       - name: Trivy Scan - Router
         run: |
-          trivy --exit-code 1 --severity CRITICAL,HIGH,MEDIUM wso2/choreo-connect-router::${{ steps.extract-project-version.outputs.version }}
+          trivy --exit-code 1 --severity CRITICAL,HIGH,MEDIUM wso2/choreo-connect-router:${{ steps.extract-project-version.outputs.version }}
 
 
       - name: Run Trivy vulnerability scanner - Adapter
