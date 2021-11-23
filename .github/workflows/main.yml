@@ -49,6 +49,10 @@ jobs:
         id: extract-project-version
       - name: Print Maven project version
         run: echo ${{ steps.extract-project-version.outputs.version }}
+      - name: Run java checkstyle
+        uses: nikitasavinov/checkstyle-action@0.4.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
       - name: Build with Maven
         run: |
           export PATH="${HOME}/go/bin:${PATH}"
