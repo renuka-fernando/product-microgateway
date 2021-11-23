@@ -77,3 +77,24 @@ jobs:
           exit-code: '1'
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH,MEDIUM'
+      - name: Trivy Scan - Adapter
+        uses: lazy-actions/gitrivy@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          image: wso2/choreo-connect-adapter:${{ steps.extract-project-version.outputs.version }}
+          severity: CRITICAL,HIGH,MEDIUM
+          fail_on_vulnerabilities: true
+      - name: Trivy Scan - Enforcer
+        uses: lazy-actions/gitrivy@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          image: wso2/choreo-connect-enforcer:${{ steps.extract-project-version.outputs.version }}
+          severity: CRITICAL,HIGH,MEDIUM
+          fail_on_vulnerabilities: true
+      - name: Trivy Scan - Router
+        uses: lazy-actions/gitrivy@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          image: wso2/choreo-connect-router:${{ steps.extract-project-version.outputs.version }}
+          severity: CRITICAL,HIGH,MEDIUM
+          fail_on_vulnerabilities: true
