@@ -26,9 +26,9 @@ jobs:
         continue-on-error: true
         name: Check latest commit is less than a day
         run: |
-          count=$(git rev-list --after="1 days ago" --count HEAD)
+          count=$(git rev-list --since="1 days ago" --count HEAD)
           echo "commits count: $count"
-          if [ $count -gt 100 ]; then
+          if [ $count -gt 0 ]; then
             echo "Should continue"
             echo "::set-output name=should_run::true"
           else
