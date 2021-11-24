@@ -3,7 +3,7 @@ name: Choreo Connect Integration Tests - Nighly
 on:
   schedule:
     # every day at 8:25pm UTC (1:55am IST )
-    - cron:  '47 11 * * *'
+    - cron:  '25 20 * * *'
   workflow_dispatch:
     inputs:
       name:
@@ -25,20 +25,21 @@ jobs:
       - id: should_run
         continue-on-error: true
         name: Check latest commit is less than a day
-        # if: ${{ github.event_name == 'schedule' }}
+        if: ${{ github.event_name == 'schedule' }}
         run: |
           count=$(git rev-list --after="1 days ago" --count HEAD)
           echo "commits count: $count"
-          if [ count -gt 100 ]; then
+          if [ $count -gt 0 ]; then
             echo "Should continue"
             echo "::set-output name=should_run::true"
           else
             echo "No changes, do not continue"
+          echo "::set-output name=should_run::false"
           fi
 
   build:
     needs: check_continue
-    if: ${{ needs.check_continue.outputs.should_run != 'false' }}
+    if: ${{ needs.check_continue.outputs.should_run == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
