@@ -70,7 +70,7 @@ jobs:
           trivy --exit-code 1 --severity "${SEVERITY}" wso2/choreo-connect-adapter:$TAG || EXIT_CODE=$?
           trivy --exit-code 1 --severity "${SEVERITY}" wso2/choreo-connect-enforcer:$TAG || EXIT_CODE=$?
           trivy --exit-code 1 --severity "${SEVERITY}" wso2/choreo-connect-router:$TAG || EXIT_CODE=$?
-          exit EXIT_CODE
+          exit $EXIT_CODE
 
 
       - name: Run Trivy vulnerability scanner - Adapter
