@@ -27,8 +27,13 @@ jobs:
         name: Check latest commit is less than a day
         # if: ${{ github.event_name == 'schedule' }}
         run: |
-          if [ $(git rev-list --after="1 days ago" --count HEAD) -gt 1005 ]; then
+          count=$(git rev-list --after="1 days ago" --count HEAD)
+          echo "commits count: $count"
+          if [ count -gt 100 ]; then
+            echo "Should continue"
             echo "::set-output name=should_run::true"
+          else
+            echo "No changes, do not continue"
           fi
 
   build:
