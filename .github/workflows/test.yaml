@@ -27,7 +27,7 @@ jobs:
         name: Check latest commit is less than a day
         run: |
           echo "Branch: " $(git rev-parse --abbrev-ref HEAD)
-          count=$(git rev-list --since="1 seconds ago" --count HEAD)
+          count=$(git rev-list --since="24 hours ago" --count HEAD)
           echo "Commits count: $count"
           echo "Commits:"
           git rev-list --since="1 days ago" HEAD
