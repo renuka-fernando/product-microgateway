@@ -25,11 +25,10 @@ jobs:
       - id: should_run
         continue-on-error: true
         name: Check latest commit is less than a day
-        if: ${{ github.event_name == 'schedule' }}
         run: |
           count=$(git rev-list --after="1 days ago" --count HEAD)
           echo "commits count: $count"
-          if [ $count -gt 0 ]; then
+          if [ $count -gt 100 ]; then
             echo "Should continue"
             echo "::set-output name=should_run::true"
           else
