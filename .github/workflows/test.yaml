@@ -27,7 +27,7 @@ jobs:
         name: Check latest commit is less than a day
         # if: ${{ github.event_name == 'schedule' }}
         run: |
-          if [ $(git rev-list --after="1 days ago" --count HEAD) -gt 0 ]; then
+          if [ $(git rev-list --after="1 days ago" --count HEAD) -gt 15 ]; then
             echo "::set-output name=should_run::true"
           fi
 
