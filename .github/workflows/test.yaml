@@ -3,7 +3,7 @@ name: Choreo Connect Integration Tests - Nighly
 on:
   schedule:
     # every day at 8:25pm UTC (1:55am IST )
-    - cron:  '25 20 * * *'
+    - cron:  '47 11 * * *'
   workflow_dispatch:
     inputs:
       name:
