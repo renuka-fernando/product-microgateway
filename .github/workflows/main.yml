@@ -1,4 +1,4 @@
-name: Choreo Connect Integration Tests
+name: PR Check - Integration Tests
 
 on: [push, pull_request]
 
@@ -49,14 +49,17 @@ jobs:
         id: extract-project-version
       - name: Print Maven project version
         run: echo ${{ steps.extract-project-version.outputs.version }}
-      - name: Run java checkstyle
-        uses: nikitasavinov/checkstyle-action@0.4.0
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
       - name: Build with Maven
         run: |
-          mvn clean install -PRelease -s .maven/settings.xml
+          export PATH="${HOME}/go/bin:${PATH}"
+          mvn clean install -PRelease -s .maven/settings.xml \
+            -pl '!:integration' -pl '!:mock-backend-server' -pl '!:test-integration'
+      - name: Run integration tests
+        run: |
+          mvn clean install -pl ':integration' -amd -s .maven/settings.xml \
       - name: Setup Trivy
+        # Using custom Trivy instead of "aquasecurity/trivy-action@0.1.0" to customize the behaviour
+        # Run Trivy scan for all images and fail if one failed
         run: |
           wget https://github.com/aquasecurity/trivy/releases/download/v0.21.0/trivy_0.21.0_Linux-64bit.tar.gz
           tar -xzf trivy_0.21.0_Linux-64bit.tar.gz
