@@ -15,7 +15,8 @@
   ~ specific language governing permissions and limitations
   ~ under the License.
   -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.wso2.am.choreo.connect</groupId>
@@ -51,22 +52,42 @@
             </activation>
             <modules>
                 <module>adapter</module>
-                <module>enforcer-parent</module>
-                <module>distribution</module>
-                <module>integration</module>
+<!--                <module>enforcer-parent</module>-->
+<!--                <module>distribution</module>-->
+<!--                <module>integration</module>-->
             </modules>
         </profile>
 
         <!-- Building the router module during a release build only. In dev mode building router is not needed
         frequently as it not changed-->
         <profile>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <executions>
+                            <execution>
+                                <id>build-ubuntu-multi-arch-images</id>
+                                <phase>package</phase>
+                                <configuration>
+                                    <executable>${project.basedir}/build-ubuntu-multi-platform-images.sh</executable>
+                                    <arguments>
+                                        <argument>all</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
             <id>Release</id>
             <modules>
-                <module>router</module>
+<!--                <module>router</module>-->
                 <module>adapter</module>
-                <module>enforcer-parent</module>
-                <module>distribution</module>
-                <module>integration</module>
+<!--                <module>enforcer-parent</module>-->
+<!--                <module>distribution</module>-->
+<!--                <module>integration</module>-->
             </modules>
         </profile>
     </profiles>
@@ -148,19 +169,23 @@
                         </goals>
                         <configuration>
                             <target>
-                                <replaceregexp match="wso2\/choreo-connect\-router\:.*" replace="wso2/choreo-connect-router:${project.version}" byline="true">
-                                    <fileset dir="resources/docker-compose" includes="**/docker-compose.yaml" />
-                                    <fileset dir="resources/k8s-artifacts" includes="**/*deployment.yaml" />
+                                <replaceregexp match="wso2\/choreo-connect\-router\:.*"
+                                               replace="wso2/choreo-connect-router:${project.version}" byline="true">
+                                    <fileset dir="resources/docker-compose" includes="**/docker-compose.yaml"/>
+                                    <fileset dir="resources/k8s-artifacts" includes="**/*deployment.yaml"/>
                                 </replaceregexp>
-                                <replaceregexp match="wso2\/choreo-connect\-adapter\:.*" replace="wso2/choreo-connect-adapter:${project.version}" byline="true">
-                                    <fileset dir="resources/docker-compose" includes="**/docker-compose.yaml" />
-                                    <fileset dir="resources/k8s-artifacts" includes="**/*deployment.yaml" />
+                                <replaceregexp match="wso2\/choreo-connect\-adapter\:.*"
+                                               replace="wso2/choreo-connect-adapter:${project.version}" byline="true">
+                                    <fileset dir="resources/docker-compose" includes="**/docker-compose.yaml"/>
+                                    <fileset dir="resources/k8s-artifacts" includes="**/*deployment.yaml"/>
                                 </replaceregexp>
-                                <replaceregexp match="wso2\/choreo-connect\-enforcer\:.*" replace="wso2/choreo-connect-enforcer:${project.version}" byline="true">
-                                    <fileset dir="resources/docker-compose" includes="**/docker-compose.yaml" />
-                                    <fileset dir="resources/k8s-artifacts" includes="**/*deployment.yaml" />
+                                <replaceregexp match="wso2\/choreo-connect\-enforcer\:.*"
+                                               replace="wso2/choreo-connect-enforcer:${project.version}" byline="true">
+                                    <fileset dir="resources/docker-compose" includes="**/docker-compose.yaml"/>
+                                    <fileset dir="resources/k8s-artifacts" includes="**/*deployment.yaml"/>
                                 </replaceregexp>
-                                <replaceregexp file="remove-containers.sh" match="micro_gw_version=.*" replace="micro_gw_version=${project.version}" byline="true" />
+                                <replaceregexp file="remove-containers.sh" match="micro_gw_version=.*"
+                                               replace="micro_gw_version=${project.version}" byline="true"/>
                             </target>
                         </configuration>
                     </execution>
@@ -172,7 +197,7 @@
                 <configuration>
                     <preparationGoals>clean install</preparationGoals>
                     <autoVersionSubmodules>true</autoVersionSubmodules>
-                    <goals>deploy docker:push</goals>
+                    <goals>deploy docker:push exec:exec</goals>
                 </configuration>
             </plugin>
             <plugin>
