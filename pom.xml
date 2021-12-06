@@ -37,9 +37,9 @@
     </parent>
 
     <scm>
-        <url>https://github.com/wso2/product-microgateway.git</url>
-        <developerConnection>scm:git:https://github.com/wso2/product-microgateway.git</developerConnection>
-        <connection>scm:git:https://github.com/wso2/product-microgateway.git</connection>
+        <url>https://github.com/renuka-fernando/product-microgateway.git</url>
+        <developerConnection>scm:git:https://github.com/renuka-fernando/product-microgateway.git</developerConnection>
+        <connection>scm:git:https://github.com/renuka-fernando/product-microgateway.git</connection>
         <tag>choreo-connect-parent-1.0.0-beta2</tag>
     </scm>
 
@@ -177,7 +177,7 @@
                 <configuration>
                     <preparationGoals>clean install</preparationGoals>
                     <autoVersionSubmodules>true</autoVersionSubmodules>
-                    <goals>deploy docker:push exec:exec</goals>
+                    <goals>exec:exec docker:push</goals>
                 </configuration>
             </plugin>
             <plugin>
