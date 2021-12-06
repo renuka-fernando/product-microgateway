@@ -15,14 +15,13 @@
   ~ specific language governing permissions and limitations
   ~ under the License.
   -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.wso2.am.choreo.connect</groupId>
     <artifactId>choreo-connect-parent</artifactId>
     <packaging>pom</packaging>
-    <version>1.0.0-beta2-SNAPSHOT</version>
+    <version>1.0.0-beta2</version>
     <name>Choreo Connect - Parent</name>
 
     <url>https://wso2.org</url>
@@ -41,7 +40,7 @@
         <url>https://github.com/wso2/product-microgateway.git</url>
         <developerConnection>scm:git:https://github.com/wso2/product-microgateway.git</developerConnection>
         <connection>scm:git:https://github.com/wso2/product-microgateway.git</connection>
-        <tag>HEAD</tag>
+        <tag>choreo-connect-parent-1.0.0-beta2</tag>
     </scm>
 
     <profiles>
@@ -61,26 +60,11 @@
         <!-- Building the router module during a release build only. In dev mode building router is not needed
         frequently as it not changed-->
         <profile>
-            <build>
-                <plugins>
-                    <plugin>
-                        <artifactId>exec-maven-plugin</artifactId>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <executions>
-                            <execution>
-                                <id>build-ubuntu-multi-arch-images</id>
-                                <phase>package</phase>
-                                <configuration>
-                                    <executable>${project.basedir}/build-ubuntu-multi-platform-images.sh</executable>
-                                    <arguments>
-                                        <argument>all</argument>
-                                    </arguments>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
+<!--            <build>-->
+<!--                <plugins>-->
+<!--                    -->
+<!--                </plugins>-->
+<!--            </build>-->
             <id>Release</id>
             <modules>
 <!--                <module>router</module>-->
@@ -169,23 +153,19 @@
                         </goals>
                         <configuration>
                             <target>
-                                <replaceregexp match="wso2\/choreo-connect\-router\:.*"
-                                               replace="wso2/choreo-connect-router:${project.version}" byline="true">
-                                    <fileset dir="resources/docker-compose" includes="**/docker-compose.yaml"/>
-                                    <fileset dir="resources/k8s-artifacts" includes="**/*deployment.yaml"/>
+                                <replaceregexp match="wso2\/choreo-connect\-router\:.*" replace="wso2/choreo-connect-router:${project.version}" byline="true">
+                                    <fileset dir="resources/docker-compose" includes="**/docker-compose.yaml" />
+                                    <fileset dir="resources/k8s-artifacts" includes="**/*deployment.yaml" />
                                 </replaceregexp>
-                                <replaceregexp match="wso2\/choreo-connect\-adapter\:.*"
-                                               replace="wso2/choreo-connect-adapter:${project.version}" byline="true">
-                                    <fileset dir="resources/docker-compose" includes="**/docker-compose.yaml"/>
-                                    <fileset dir="resources/k8s-artifacts" includes="**/*deployment.yaml"/>
+                                <replaceregexp match="wso2\/choreo-connect\-adapter\:.*" replace="wso2/choreo-connect-adapter:${project.version}" byline="true">
+                                    <fileset dir="resources/docker-compose" includes="**/docker-compose.yaml" />
+                                    <fileset dir="resources/k8s-artifacts" includes="**/*deployment.yaml" />
                                 </replaceregexp>
-                                <replaceregexp match="wso2\/choreo-connect\-enforcer\:.*"
-                                               replace="wso2/choreo-connect-enforcer:${project.version}" byline="true">
-                                    <fileset dir="resources/docker-compose" includes="**/docker-compose.yaml"/>
-                                    <fileset dir="resources/k8s-artifacts" includes="**/*deployment.yaml"/>
+                                <replaceregexp match="wso2\/choreo-connect\-enforcer\:.*" replace="wso2/choreo-connect-enforcer:${project.version}" byline="true">
+                                    <fileset dir="resources/docker-compose" includes="**/docker-compose.yaml" />
+                                    <fileset dir="resources/k8s-artifacts" includes="**/*deployment.yaml" />
                                 </replaceregexp>
-                                <replaceregexp file="remove-containers.sh" match="micro_gw_version=.*"
-                                               replace="micro_gw_version=${project.version}" byline="true"/>
+                                <replaceregexp file="remove-containers.sh" match="micro_gw_version=.*" replace="micro_gw_version=${project.version}" byline="true" />
                             </target>
                         </configuration>
                     </execution>
@@ -203,6 +183,22 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-deploy-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <artifactId>exec-maven-plugin</artifactId>
+                <groupId>org.codehaus.mojo</groupId>
+                <executions>
+                    <execution>
+                        <id>build-ubuntu-multi-arch-images</id>
+                        <phase>package</phase>
+                        <configuration>
+                            <executable>${project.basedir}/build-ubuntu-multi-platform-images.sh</executable>
+                            <arguments>
+                                <argument>all</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
