@@ -184,22 +184,22 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-deploy-plugin</artifactId>
             </plugin>
-            <plugin>
-                <artifactId>exec-maven-plugin</artifactId>
-                <groupId>org.codehaus.mojo</groupId>
-                <executions>
-                    <execution>
-                        <id>build-ubuntu-multi-arch-images</id>
-                        <phase>package</phase>
-                        <configuration>
-                            <executable>${project.basedir}/build-ubuntu-multi-platform-images.sh</executable>
-                            <arguments>
-                                <argument>all</argument>
-                            </arguments>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
+<!--            <plugin>-->
+<!--                <artifactId>exec-maven-plugin</artifactId>-->
+<!--                <groupId>org.codehaus.mojo</groupId>-->
+<!--                <executions>-->
+<!--                    <execution>-->
+<!--                        <id>build-ubuntu-multi-arch-images</id>-->
+<!--                        <phase>package</phase>-->
+<!--                        <configuration>-->
+<!--                            <executable>${project.basedir}/build-ubuntu-multi-platform-images.sh</executable>-->
+<!--                            <arguments>-->
+<!--                                <argument>all</argument>-->
+<!--                            </arguments>-->
+<!--                        </configuration>-->
+<!--                    </execution>-->
+<!--                </executions>-->
+<!--            </plugin>-->
         </plugins>
     </build>
     <dependencyManagement>
