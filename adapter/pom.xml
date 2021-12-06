@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.wso2.am.choreo.connect</groupId>
         <artifactId>choreo-connect-parent</artifactId>
-        <version>1.0.0-beta2-SNAPSHOT</version>
+        <version>1.0.0-beta3</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -140,4 +140,8 @@
             </plugin>
         </plugins>
     </build>
+
+  <scm>
+    <tag>1.0.0-beta3</tag>
+  </scm>
 </project>
