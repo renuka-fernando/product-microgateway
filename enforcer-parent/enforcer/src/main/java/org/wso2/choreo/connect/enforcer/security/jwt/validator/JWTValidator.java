@@ -66,11 +66,12 @@ public class JWTValidator {
 
         if (StringUtils.isNotEmpty(issuer) && tokenIssuers.containsKey(issuer)) {
             ExtendedTokenIssuerDto tokenIssuer = tokenIssuers.get(issuer);
-            this.jwtTransformer = ConfigHolder.getInstance().getConfig().getJwtTransformerMap().get(issuer);
-            if (this.jwtTransformer == null) {
-                this.jwtTransformer = new DefaultJWTTransformer();
+            JWTTransformer jwtTransformer = ConfigHolder.getInstance().getConfig().getJwtTransformerMap().get(issuer);
+            if (jwtTransformer == null) {
+                jwtTransformer = new DefaultJWTTransformer();
             }
-            this.jwtTransformer.loadConfiguration(tokenIssuer);
+            this.jwtTransformer = jwtTransformer;
+            jwtTransformer.loadConfiguration(tokenIssuer);
             return validateToken(signedJWTInfo, tokenIssuer);
         }
         jwtValidationInfo.setValid(false);
