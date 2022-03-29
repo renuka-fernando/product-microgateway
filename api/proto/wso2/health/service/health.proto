@@ -24,7 +24,7 @@ message HealthCheckResponse {
 }
 
 // [#protodoc-title: Health]
-service Health { //TODO: (renuka) rename to HealthService ?
+service Healthz { //TODO: (renuka) rename to HealthService ?
   rpc Check(HealthCheckRequest) returns (HealthCheckResponse);
 
   rpc Watch(HealthCheckRequest) returns (stream HealthCheckResponse);
