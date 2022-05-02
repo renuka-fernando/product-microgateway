@@ -22,15 +22,15 @@ import com.sun.net.httpserver.HttpServer;
 import com.sun.net.httpserver.HttpsConfigurator;
 import com.sun.net.httpserver.HttpsParameters;
 import com.sun.net.httpserver.HttpsServer;
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
+
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
 import javax.net.ssl.SSLParameters;
 import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
-import java.util.Arrays;
 
 public class MockInterceptorServer extends Thread {
     private static final Logger log = LogManager.getLogger(MockInterceptorServer.class.getName());
@@ -49,11 +49,13 @@ public class MockInterceptorServer extends Thread {
     }
 
     private void clearStatus() {
-        handler = InterceptorConstants.Handler.NONE;
-        requestFlowRequestBody = "";
-        requestFlowResponseBody = "{}";
-        responseFlowRequestBody = "";
-        responseFlowResponseBody = "{}";
+        synchronized (this) {
+            handler = InterceptorConstants.Handler.NONE;
+            requestFlowRequestBody = "";
+            requestFlowResponseBody = "{}";
+            responseFlowRequestBody = "";
+            responseFlowResponseBody = "{}";
+        }
     }
 
 
@@ -69,10 +71,13 @@ public class MockInterceptorServer extends Thread {
 
             // status
             managerHttpServer.createContext(context + "/status", exchange -> {
+                log.info("Reading interceptor service status");
                 JSONObject responseJSON = new JSONObject();
-                responseJSON.put(InterceptorConstants.StatusPayload.HANDLER, handler);
-                responseJSON.put(InterceptorConstants.StatusPayload.REQUEST_FLOW_REQUEST_BODY, requestFlowRequestBody);
-                responseJSON.put(InterceptorConstants.StatusPayload.RESPONSE_FLOW_REQUEST_BODY, responseFlowRequestBody);
+                synchronized (this) {
+                    responseJSON.put(InterceptorConstants.StatusPayload.HANDLER, handler);
+                    responseJSON.put(InterceptorConstants.StatusPayload.REQUEST_FLOW_REQUEST_BODY, requestFlowRequestBody);
+                    responseJSON.put(InterceptorConstants.StatusPayload.RESPONSE_FLOW_REQUEST_BODY, responseFlowRequestBody);
+                }
 
                 byte[] response = responseJSON.toString().getBytes();
                 exchange.getResponseHeaders().set(Constants.CONTENT_TYPE, Constants.CONTENT_TYPE_APPLICATION_JSON);
@@ -83,6 +88,7 @@ public class MockInterceptorServer extends Thread {
 
             // clear status
             managerHttpServer.createContext(context + "/clear-status", exchange -> {
+                log.info("Clearing interceptor service status");
                 clearStatus();
                 Utils.send200OK(exchange);
                 exchange.close();
@@ -90,14 +96,20 @@ public class MockInterceptorServer extends Thread {
 
             // set response of request flow interceptor
             managerHttpServer.createContext(context + "/request", exchange -> {
-                requestFlowResponseBody = Utils.requestBodyToString(exchange);
+                log.info("Setting request interceptor service body tobe returned");
+                synchronized (this) {
+                    requestFlowResponseBody = Utils.requestBodyToString(exchange);
+                }
                 Utils.send200OK(exchange);
                 exchange.close();
             });
 
             // set response of response flow interceptor
             managerHttpServer.createContext(context + "/response", exchange -> {
-                responseFlowResponseBody = Utils.requestBodyToString(exchange);
+                log.info("Setting response interceptor service body tobe returned");
+                synchronized (this) {
+                    responseFlowResponseBody = Utils.requestBodyToString(exchange);
+                }
                 Utils.send200OK(exchange);
                 exchange.close();
             });
@@ -128,13 +140,13 @@ public class MockInterceptorServer extends Thread {
                 throw new RuntimeException("Server port is not defined");
             }
             try {
-                HttpServer httpServer = HttpsServer.create(new InetSocketAddress(handlerServerPort), 0);
+                HttpsServer httpServer = HttpsServer.create(new InetSocketAddress(handlerServerPort), 0);
                 SSLContext sslContext = SSLContext.getInstance("TLS");
                 sslContext.init(
                         Utils.getKeyManagers("interceptorKeystore.pkcs12", "interceptor"), // Created using interceptorKeystore.pem
                         Utils.getTrustManagers(), null);
 
-                ((HttpsServer) httpServer).setHttpsConfigurator(new HttpsConfigurator(sslContext) {
+                httpServer.setHttpsConfigurator(new HttpsConfigurator(sslContext) {
                     public void configure(HttpsParameters params) {
                         try {
                             SSLContext sslContext = SSLContext.getDefault();
@@ -161,15 +173,17 @@ public class MockInterceptorServer extends Thread {
                     }
 
                     log.info("Called /handle-request of interceptor service");
-                    requestFlowRequestBody = Utils.requestBodyToString(exchange);
-                    // set which flow has handled by interceptor
-                    if (Arrays.asList(InterceptorConstants.Handler.NONE, InterceptorConstants.Handler.REQUEST_ONLY).contains(handler)) {
-                        handler = InterceptorConstants.Handler.REQUEST_ONLY;
-                    } else {
-                        handler = InterceptorConstants.Handler.BOTH;
+                    byte[] response;
+                    synchronized (this) {
+                        requestFlowRequestBody = Utils.requestBodyToString(exchange);
+                        response = requestFlowResponseBody.getBytes();
+                        // set which flow has handled by interceptor
+                        if (handler == InterceptorConstants.Handler.NONE || handler == InterceptorConstants.Handler.REQUEST_ONLY) {
+                            handler = InterceptorConstants.Handler.REQUEST_ONLY;
+                        } else {
+                            handler = InterceptorConstants.Handler.BOTH;
+                        }
                     }
-
-                    byte[] response = requestFlowResponseBody.getBytes();
                     exchange.getResponseHeaders().set(Constants.CONTENT_TYPE, Constants.CONTENT_TYPE_APPLICATION_JSON);
                     exchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, response.length);
                     exchange.getResponseBody().write(response);
@@ -184,15 +198,17 @@ public class MockInterceptorServer extends Thread {
                     }
 
                     log.info("Called /handle-response of interceptor service");
-                    responseFlowRequestBody = Utils.requestBodyToString(exchange);
-                    // set which flow has handled by interceptor
-                    if (Arrays.asList(InterceptorConstants.Handler.NONE, InterceptorConstants.Handler.RESPONSE_ONLY).contains(handler)) {
-                        handler = InterceptorConstants.Handler.RESPONSE_ONLY;
-                    } else {
-                        handler = InterceptorConstants.Handler.BOTH;
+                    byte[] response;
+                    synchronized (this){
+                        responseFlowRequestBody = Utils.requestBodyToString(exchange);
+                        response = responseFlowResponseBody.getBytes();
+                        // set which flow has handled by interceptor
+                        if (handler == InterceptorConstants.Handler.NONE || handler == InterceptorConstants.Handler.RESPONSE_ONLY) {
+                            handler = InterceptorConstants.Handler.RESPONSE_ONLY;
+                        } else {
+                            handler = InterceptorConstants.Handler.BOTH;
+                        }
                     }
-
-                    byte[] response = responseFlowResponseBody.getBytes();
                     exchange.getResponseHeaders().set(Constants.CONTENT_TYPE, Constants.CONTENT_TYPE_APPLICATION_JSON);
                     exchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, response.length);
                     exchange.getResponseBody().write(response);
