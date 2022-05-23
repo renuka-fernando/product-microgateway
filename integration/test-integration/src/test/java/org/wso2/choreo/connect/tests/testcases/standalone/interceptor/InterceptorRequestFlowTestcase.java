@@ -127,7 +127,8 @@ public class InterceptorRequestFlowTestcase extends InterceptorBaseTestCase {
 
         Assert.assertNotNull(response);
         int expectedRespCode = StringUtils.isEmpty(expectedBody) ? HttpStatus.SC_NO_CONTENT : HttpStatus.SC_OK;
-        Assert.assertEquals(response.getResponseCode(), expectedRespCode, "Response code mismatched");
+        Assert.assertEquals(response.getResponseCode(), expectedRespCode,
+                "Response code mismatched: " + response.getData());
 
         // check which flows are invoked in interceptor service
         JSONObject status = getInterceptorStatus();
@@ -265,6 +266,17 @@ public class InterceptorRequestFlowTestcase extends InterceptorBaseTestCase {
         // check which flows are invoked in interceptor service
         JSONObject status = getInterceptorStatus();
         String handler = status.getString(InterceptorConstants.StatusPayload.HANDLER);
+        testInterceptorHandler(handler, InterceptorConstants.Handler.REQUEST_ONLY);
+
+        Assert.assertEquals(response.getData(), "UPDATED BODY");
+
+        response = HttpsClientRequest.doPost(Utils.getServiceURLHttps(
+                basePath + "/pet/findByStatus/dynamic-ep-echo"), "INITIAL BODY", headers);
+        Assert.assertNotNull(response);
+
+        // check which flows are invoked in interceptor service
+        status = getInterceptorStatus();
+        handler = status.getString(InterceptorConstants.StatusPayload.HANDLER);
         testInterceptorHandler(handler, InterceptorConstants.Handler.REQUEST_ONLY);
 
         Assert.assertEquals(response.getData(), "UPDATED BODY");
