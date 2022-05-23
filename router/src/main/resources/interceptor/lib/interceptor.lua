@@ -67,14 +67,16 @@ local function modify_trailers(handle, interceptor_response_body)
     end
 end
 
-local function handle_dynamic_endpoint(handle, interceptor_response_body, inv_context, shared_info)
+local function handle_dynamic_endpoint(handle, interceptor_response_body, inv_context)
     local dynamicEp = interceptor_response_body[RESPONSE.DYNAMIC_ENDPOINT]
     if dynamicEp and dynamicEp[DYNAMIC_ENDPOINT.ENDPOINT_NAME] ~= "" then
         local dynamicEpName = dynamicEp[DYNAMIC_ENDPOINT.ENDPOINT_NAME]
         handle:logDebug("dynamic endpoint found: " .. dynamicEpName)
         -- template: <organizationID>_<EndpointName>_xwso2cluster_<vHost>_<API name><API version>
-        local endpoint = string.format("%s_%s_xwso2cluster_%s_%s%s", shared_info[SHARED.ORG_ID], dynamicEpName,
-            inv_context[INV_CONTEXT.VHOST], inv_context[INV_CONTEXT.API_NAME], inv_context[INV_CONTEXT.API_VERSION])
+        local endpoint = string.format("%s_%s_xwso2cluster_%s_%s%s", inv_context[INV_CONTEXT.ORG_ID],
+                dynamicEpName, inv_context[INV_CONTEXT.VHOST], inv_context[INV_CONTEXT.API_NAME],
+                inv_context[INV_CONTEXT.API_VERSION])
+        handle:logDebug('Setting header "x-wso2-cluster-header": ' .. endpoint)
         handle:headers():replace("x-wso2-cluster-header", endpoint)
     end
 end
@@ -196,10 +198,6 @@ end
 
 local function include_invocation_context(handle, req_flow_includes, resp_flow_includes, inv_context, interceptor_request_body, shared_info, request_headers)
     if req_flow_includes[INCLUDES.INV_CONTEXT] or resp_flow_includes[INCLUDES.INV_CONTEXT] then
-        -- remove organizationId from invocationContext, since it should not be sent to the interceptor service
-        shared_info[SHARED.ORG_ID] = inv_context[INV_CONTEXT.ORG_ID]
-        inv_context[INV_CONTEXT.ORG_ID] = nil
-
         -- We first read from "x-forwarded-for" which is the actual client IP, when it comes to scenarios like the request is coming through a load balancer
         -- https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Forwarded-For the header contains the original clients IP.
         local client_ip = request_headers:get("x-forwarded-for")
@@ -229,6 +227,8 @@ local function include_invocation_context(handle, req_flow_includes, resp_flow_i
     end
     if req_flow_includes[INCLUDES.INV_CONTEXT] then
         interceptor_request_body[REQUEST.INV_CONTEXT] = inv_context
+        -- remove organizationId from invocationContext, since it should not be sent to the interceptor service
+        interceptor_request_body[INV_CONTEXT.ORG_ID] = nil
     end
     if resp_flow_includes[INCLUDES.INV_CONTEXT] then
         shared_info[REQUEST.INV_CONTEXT] = inv_context
@@ -366,7 +366,7 @@ function interceptor.handle_request_interceptor(request_handle, intercept_servic
 
     --#region handle dynamic endpoint
     -- handle this after update headers, in case if user modify the header "x-wso2-cluster-header"
-    handle_dynamic_endpoint(request_handle, interceptor_response_body, inv_context, shared_info)
+    handle_dynamic_endpoint(request_handle, interceptor_response_body, inv_context)
     --#endregion
 
     if interceptor_response_body[RESPONSE.INTCPT_CONTEXT] then
@@ -448,6 +448,8 @@ function interceptor.handle_response_interceptor(response_handle, intercept_serv
     --#region set invocation context
     if resp_flow_includes[REQUEST.INV_CONTEXT] then
         interceptor_request_body[REQUEST.INV_CONTEXT] = shared_info[REQUEST.INV_CONTEXT]
+        -- remove organizationId from invocationContext, since it should not be sent to the interceptor service
+        interceptor_request_body[INV_CONTEXT.ORG_ID] = nil
     end
     --#endregion
 
