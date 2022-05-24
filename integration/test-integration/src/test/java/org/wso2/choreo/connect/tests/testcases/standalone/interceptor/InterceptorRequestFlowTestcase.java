@@ -245,7 +245,7 @@ public class InterceptorRequestFlowTestcase extends InterceptorBaseTestCase {
         Assert.assertEquals(response.getData(), interceptorRespBody);
     }
 
-    @Test(description = "Test dynamic endpoints")
+    @Test(description = "Test dynamic endpoints", invocationCount = 2)
     public void testDynamicEndpoints() throws Exception {
         // setting response body of interceptor service
         JSONObject interceptorRespBodyJSON = new JSONObject();
