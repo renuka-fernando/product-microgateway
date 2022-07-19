@@ -4,7 +4,7 @@ Default envoy docker image do not ship with gperftools. Following steps build en
 
 ## Variables
 
-Variable for the script [build-cc-profile-docker-image.sh](build-cc-router-debug-docker-image.sh).
+Variable for the script [build-cc-router-debug-docker-image.sh](build-cc-router-debug-docker-image.sh).
 
 | Variable           | Description                                                        |
 |--------------------|:-------------------------------------------------------------------|

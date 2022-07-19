@@ -101,7 +101,7 @@ public class InterceptorRequestFlowTestCase extends InterceptorBaseTestCase {
             if (interceptorRespBody != null) {
                 interceptorRespBodyJSON.put("body", Base64.getEncoder().encodeToString(interceptorRespBody.getBytes()));
             } else {
-                interceptorRespBodyJSON.put("body", (String) null);
+                interceptorRespBodyJSON.put("body", JSONObject.NULL);
             }
         }
         interceptorRespBodyJSON.put("headersToAdd", Collections.singletonMap("foo-add", "Header_newly_added"));
@@ -132,8 +132,7 @@ public class InterceptorRequestFlowTestCase extends InterceptorBaseTestCase {
         testInterceptorHandler(handler, InterceptorConstants.Handler.REQUEST_ONLY);
 
         Assert.assertNotNull(response);
-        int expectedRespCode = StringUtils.isEmpty(expectedBody) ? HttpStatus.SC_NO_CONTENT : HttpStatus.SC_OK;
-        Assert.assertEquals(response.getResponseCode(), expectedRespCode, "Response code mismatched");
+        Assert.assertEquals(response.getResponseCode(), HttpStatus.SC_OK, "Response code mismatched");
 
         // test headers
         Map<String, String> respHeaders = response.getHeaders();
@@ -193,8 +192,7 @@ public class InterceptorRequestFlowTestCase extends InterceptorBaseTestCase {
         testInterceptorHandler(handler, InterceptorConstants.Handler.REQUEST_ONLY);
 
         Assert.assertNotNull(response);
-        int expectedRespCode = StringUtils.isEmpty(clientRespBody) ? HttpStatus.SC_NO_CONTENT : HttpStatus.SC_OK;
-        Assert.assertEquals(response.getResponseCode(), expectedRespCode, "Response code mismatched");
+        Assert.assertEquals(response.getResponseCode(), HttpStatus.SC_OK, "Response code mismatched");
 
         // test headers
         Map<String, String> respHeaders = response.getHeaders();

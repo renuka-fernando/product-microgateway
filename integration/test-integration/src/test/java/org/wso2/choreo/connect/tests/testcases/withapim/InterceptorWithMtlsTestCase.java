@@ -122,8 +122,7 @@ public class InterceptorWithMtlsTestCase extends ApimBaseTest {
                 API_CONTEXT + "/1.0.0/echo/123"), clientReqBody, headers);
 
         Assert.assertNotNull(response);
-        int expectedRespCode = StringUtils.isEmpty(clientReqBody) ? HttpStatus.SC_NO_CONTENT : HttpStatus.SC_OK;
-        Assert.assertEquals(response.getResponseCode(), expectedRespCode, "Response code mismatched");
+        Assert.assertEquals(response.getResponseCode(), HttpStatus.SC_OK, "Response code mismatched");
 
         // check which flows are invoked in interceptor service
         JSONObject status = getInterceptorStatus();
@@ -175,8 +174,7 @@ public class InterceptorWithMtlsTestCase extends ApimBaseTest {
                 API_CONTEXT + "/1.0.0/echo/456"), clientReqBody, headers);
 
         Assert.assertNotNull(response);
-        int expectedRespCode = StringUtils.isEmpty(clientReqBody) ? HttpStatus.SC_NO_CONTENT : HttpStatus.SC_OK;
-        Assert.assertEquals(response.getResponseCode(), expectedRespCode, "Response code mismatched");
+        Assert.assertEquals(response.getResponseCode(), HttpStatus.SC_OK, "Response code mismatched");
 
         // check which flows are invoked in interceptor service
         JSONObject status = getInterceptorStatus();

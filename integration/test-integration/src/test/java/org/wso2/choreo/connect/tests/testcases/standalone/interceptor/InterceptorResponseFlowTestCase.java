@@ -107,8 +107,7 @@ public class InterceptorResponseFlowTestCase extends InterceptorBaseTestCase {
         testInterceptorHandler(handler, InterceptorConstants.Handler.RESPONSE_ONLY);
 
         Assert.assertNotNull(response);
-        int expectedRespCode = StringUtils.isEmpty(expectedRespToClient) ? HttpStatus.SC_NO_CONTENT : HttpStatus.SC_OK;
-        Assert.assertEquals(response.getResponseCode(), expectedRespCode, "Response code mismatched");
+        Assert.assertEquals(response.getResponseCode(), HttpStatus.SC_OK, "Response code mismatched");
 
         // test headers
         Map<String, String> respHeaders = response.getHeaders();

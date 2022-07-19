@@ -47,8 +47,7 @@ public class Utils {
         String requestBody = Utils.requestBodyToString(exchange);
         response = requestBody.getBytes();
         exchange.getResponseHeaders().putAll(exchange.getRequestHeaders());
-        int respCode = response.length == 0 ? HttpURLConnection.HTTP_NO_CONTENT : HttpURLConnection.HTTP_OK;
-        exchange.sendResponseHeaders(respCode, response.length);
+        exchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, response.length);
         exchange.getResponseBody().write(response);
         exchange.close();
     }
@@ -75,8 +74,7 @@ public class Utils {
 
         Gson gson = new Gson();
         byte[] response = gson.toJson(echoResponse).getBytes();
-        int respCode = response.length == 0 ? HttpURLConnection.HTTP_NO_CONTENT : HttpURLConnection.HTTP_OK;
-        respondWithBodyAndClose(respCode, response, exchange);
+        respondWithBodyAndClose(HttpURLConnection.HTTP_OK, response, exchange);
     }
 
     public static String requestBodyToString(HttpExchange exchange) throws IOException {
@@ -86,7 +84,7 @@ public class Utils {
         BufferedReader reader = new BufferedReader(isReader);
         StringBuffer sb = new StringBuffer();
         String str;
-        while((str = reader.readLine())!= null){
+        while ((str = reader.readLine()) != null) {
             sb.append(str);
         }
         return sb.toString();
@@ -120,7 +118,7 @@ public class Utils {
                 .getResourceAsStream("mg.pem");
 
         CertificateFactory cf = CertificateFactory.getInstance("X.509");
-        X509Certificate caCert = (X509Certificate)cf.generateCertificate(inputStream);
+        X509Certificate caCert = (X509Certificate) cf.generateCertificate(inputStream);
 
         TrustManagerFactory tmf = TrustManagerFactory
                 .getInstance(TrustManagerFactory.getDefaultAlgorithm());
@@ -131,6 +129,7 @@ public class Utils {
         tmf.init(ks);
         return tmf.getTrustManagers();
     }
+
     // TODO: close input streams
     public static KeyManager[] getKeyManagers(String keystoreName, String password) throws Exception {
         InputStream inputStream = Thread.currentThread().getContextClassLoader()
