@@ -243,6 +243,107 @@ func CreateVirtualHosts(vhostToRouteArrayMap map[string][]*routev3.Route) []*rou
 			Name:    vhost,
 			Domains: []string{vhost, fmt.Sprint(vhost, ":*")},
 			Routes:  routes,
+			RequestHeadersToRemove: []string{
+				"x-ratelimit-api-policy",
+				"x-ratelimit-application",
+				"x-ratelimit-application-policy",
+				"x-ratelimit-subscription",
+				"x-ratelimit-subscription-policy",
+			},
+			RateLimits: []*routev3.RateLimit{
+				{
+					Actions: []*routev3.RateLimit_Action{
+						{
+							ActionSpecifier: &routev3.RateLimit_Action_GenericKey_{
+								GenericKey: &routev3.RateLimit_Action_GenericKey{
+									DescriptorKey:   "org",
+									DescriptorValue: "John",
+								},
+							},
+						},
+						{
+							ActionSpecifier: &routev3.RateLimit_Action_RequestHeaders_{
+								RequestHeaders: &routev3.RateLimit_Action_RequestHeaders{
+									DescriptorKey: "application",
+									HeaderName:    "x-ratelimit-application",
+								},
+							},
+						},
+						{
+							ActionSpecifier: &routev3.RateLimit_Action_RequestHeaders_{
+								RequestHeaders: &routev3.RateLimit_Action_RequestHeaders{
+									DescriptorKey: "policy",
+									HeaderName:    "x-ratelimit-application-policy",
+								},
+							},
+						},
+					},
+				},
+				{
+					Actions: []*routev3.RateLimit_Action{
+						{
+							ActionSpecifier: &routev3.RateLimit_Action_GenericKey_{
+								GenericKey: &routev3.RateLimit_Action_GenericKey{
+									DescriptorKey:   "org",
+									DescriptorValue: "John",
+								},
+							},
+						},
+						{
+							ActionSpecifier: &routev3.RateLimit_Action_RequestHeaders_{
+								RequestHeaders: &routev3.RateLimit_Action_RequestHeaders{
+									DescriptorKey: "subscription",
+									HeaderName:    "x-ratelimit-subscription",
+								},
+							},
+						},
+						{
+							ActionSpecifier: &routev3.RateLimit_Action_RequestHeaders_{
+								RequestHeaders: &routev3.RateLimit_Action_RequestHeaders{
+									DescriptorKey: "policy",
+									HeaderName:    "x-ratelimit-subscription-policy",
+								},
+							},
+						},
+						{
+							ActionSpecifier: &routev3.RateLimit_Action_GenericKey_{
+								GenericKey: &routev3.RateLimit_Action_GenericKey{
+									DescriptorKey:   "spike",
+									DescriptorValue: "true",
+								},
+							},
+						},
+					},
+				},
+				{
+					Actions: []*routev3.RateLimit_Action{
+						{
+							ActionSpecifier: &routev3.RateLimit_Action_GenericKey_{
+								GenericKey: &routev3.RateLimit_Action_GenericKey{
+									DescriptorKey:   "org",
+									DescriptorValue: "John",
+								},
+							},
+						},
+						{
+							ActionSpecifier: &routev3.RateLimit_Action_RequestHeaders_{
+								RequestHeaders: &routev3.RateLimit_Action_RequestHeaders{
+									DescriptorKey: "subscription",
+									HeaderName:    "x-ratelimit-subscription",
+								},
+							},
+						},
+						{
+							ActionSpecifier: &routev3.RateLimit_Action_RequestHeaders_{
+								RequestHeaders: &routev3.RateLimit_Action_RequestHeaders{
+									DescriptorKey: "policy",
+									HeaderName:    "x-ratelimit-subscription-policy",
+								},
+							},
+						},
+					},
+				},
+			},
 		}
 		virtualHosts = append(virtualHosts, virtualHost)
 	}

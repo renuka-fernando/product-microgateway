@@ -37,6 +37,7 @@ import (
 	routev3 "github.com/envoyproxy/go-control-plane/envoy/config/route/v3"
 	extAuthService "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/ext_authz/v3"
 	lua "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/lua/v3"
+	rateLimitV3 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/ratelimit/v3"
 	tlsv3 "github.com/envoyproxy/go-control-plane/envoy/extensions/transport_sockets/tls/v3"
 	envoy_type_matcherv3 "github.com/envoyproxy/go-control-plane/envoy/type/matcher/v3"
 	"github.com/envoyproxy/go-control-plane/pkg/wellknown"
@@ -789,6 +790,18 @@ func createRoute(params *routeCreateParams) *routev3.Route {
 	contextExtensions[prodClusterNameContextExtension] = prodClusterName
 	contextExtensions[sandClusterNameContextExtension] = sandClusterName
 
+	rateLimitConfig := rateLimitV3.RateLimitPerRoute{
+		VhRateLimits: rateLimitV3.RateLimitPerRoute_INCLUDE,
+	}
+
+	rlBffr := proto.NewBuffer(nil)
+	rlBffr.SetDeterministic(true)
+	_ = rlBffr.Marshal(&rateLimitConfig)
+	rateLimitRouteConf := &any.Any{
+		TypeUrl: extAuthzPerRouteName,
+		Value:   rlBffr.Bytes(),
+	}
+
 	extAuthPerFilterConfig := extAuthService.ExtAuthzPerRoute{
 		Override: &extAuthService.ExtAuthzPerRoute_CheckSettings{
 			CheckSettings: &extAuthService.CheckSettings{
@@ -888,6 +901,21 @@ func createRoute(params *routeCreateParams) *routev3.Route {
 		ClusterHeader: clusterHeaderName,
 	}
 	action.Route.ClusterSpecifier = headerBasedClusterSpecifier
+	action.Route.RateLimits = []*routev3.RateLimit{
+		&routev3.RateLimit{
+			Actions: []*routev3.RateLimit_Action{
+				{
+					ActionSpecifier: &routev3.RateLimit_Action_GenericKey_{
+						GenericKey: &routev3.RateLimit_Action_GenericKey{
+							DescriptorKey:   "",
+							DescriptorValue: "",
+						},
+					},
+				},
+			},
+		},
+	}
+
 	logger.LoggerOasparser.Debug("added header based cluster")
 
 	if (prodRouteConfig != nil && prodRouteConfig.RetryConfig != nil) ||
@@ -928,6 +956,7 @@ func createRoute(params *routeCreateParams) *routev3.Route {
 		TypedPerFilterConfig: map[string]*any.Any{
 			wellknown.HTTPExternalAuthorization: extAuthzFilter,
 			wellknown.Lua:                       luaFilter,
+			wellknown.HTTPRateLimit:             rateLimitRouteConf,
 		},
 		ResponseHeadersToRemove: responseHeadersToRemove,
 	}
