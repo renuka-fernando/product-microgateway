@@ -45,6 +45,7 @@ import (
 // getHTTPFilters generates httpFilter configuration
 func getHTTPFilters() []*hcmv3.HttpFilter {
 	extAauth := getExtAuthzHTTPFilter()
+	ratelimit := getRateLimitFilter()
 	router := getRouterHTTPFilter()
 	lua := getLuaFilter()
 	cors := &hcmv3.HttpFilter{
@@ -55,6 +56,7 @@ func getHTTPFilters() []*hcmv3.HttpFilter {
 	httpFilters := []*hcmv3.HttpFilter{
 		cors,
 		extAauth,
+		ratelimit,
 		lua,
 		router,
 	}
@@ -91,15 +93,34 @@ func getUpgradeFilters() []*hcmv3.HttpFilter {
 		ConfigType: &hcmv3.HttpFilter_TypedConfig{},
 	}
 	extAauth := getExtAuthzHTTPFilter()
+	ratelimit := getRateLimitFilter()
 	mgwWebSocketWASM := getMgwWebSocketWASMFilter()
 	router := getRouterHTTPFilter()
 	upgradeFilters := []*hcmv3.HttpFilter{
 		cors,
 		extAauth,
+		ratelimit,
 		mgwWebSocketWASM,
 		router,
 	}
 	return upgradeFilters
+}
+
+func getRateLimitFilter() *hcmv3.HttpFilter {
+	conf, _ := config.ReadConfigs()
+	rateLimitConfig := &conf.RateLimit
+
+	rt, err2 := ptypes.MarshalAny(rateLimitConfig)
+	if err2 != nil {
+		logger.LoggerOasparser.Error(err2)
+	}
+
+	return &hcmv3.HttpFilter{
+		Name: rateLimitFilterName,
+		ConfigType: &hcmv3.HttpFilter_TypedConfig{
+			TypedConfig: rt,
+		},
+	}
 }
 
 // getExtAuthzHTTPFilter gets ExtAuthz http filter.

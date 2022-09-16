@@ -19,6 +19,8 @@ package config
 import (
 	"sync"
 	"time"
+
+	ratelimitv3 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/ratelimit/v3"
 )
 
 // Experimenting asynchronous communication between go routines using channels
@@ -77,6 +79,7 @@ type Config struct {
 	GlobalAdapter globalAdapter `toml:"globalAdapter"`
 	Analytics     analytics     `toml:"analytics"`
 	Tracing       tracing
+	RateLimit     ratelimitv3.RateLimit
 }
 
 // Adapter related Configurations
