@@ -79,7 +79,7 @@ type Config struct {
 	GlobalAdapter globalAdapter `toml:"globalAdapter"`
 	Analytics     analytics     `toml:"analytics"`
 	Tracing       tracing
-	RateLimit     ratelimitv3.RateLimit
+	Ratelimit     ratelimitv3.RateLimit
 }
 
 // Adapter related Configurations

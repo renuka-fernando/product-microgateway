@@ -1,7 +1,7 @@
 version: "3.7"
 services:
   router:
-    image: wso2/choreo-connect-router:1.1.0
+    image: renukafernando/choreo-connect-router:1.1.0-ratelimit-patch
     logging:
       options:
         max-size: "20m"
@@ -31,7 +31,7 @@ services:
       - adapter
       - enforcer
   adapter:
-    image: wso2/choreo-connect-adapter:1.1.0
+    image: renukafernando/choreo-connect-adapter:1.1.0-ratelimit-patch
     logging:
       options:
         max-size: "20m"

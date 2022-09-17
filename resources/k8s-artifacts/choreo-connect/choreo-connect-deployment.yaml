@@ -108,7 +108,7 @@ spec:
               name: router-keystore-vol
             - mountPath: /home/wso2/security/truststore
               name: router-truststore-vol
-          image: wso2/choreo-connect-router:1.1.0
+          image: renukafernando/choreo-connect-router:1.1.0-ratelimit-patch
           imagePullPolicy: IfNotPresent
           env:
             - name: ROUTER_ADMIN_HOST

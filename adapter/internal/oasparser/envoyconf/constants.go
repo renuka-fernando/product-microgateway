@@ -18,6 +18,7 @@ package envoyconf
 
 const (
 	extAuthzClusterName     string = "ext-authz"
+	ratelimitClusterName    string = "ratelimit"
 	accessLoggerClusterName string = "access-logger"
 	grpcAccessLogLogName    string = "mgw_access_logs"
 	tracingClusterName      string = "wso2_cc_trace"

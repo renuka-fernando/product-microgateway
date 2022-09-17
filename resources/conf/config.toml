@@ -1,4 +1,22 @@
-[adapter] 
+[ratelimit]
+domain = "default"
+stage = 0
+requestType = "external"
+failureModeDeny = false
+rateLimitedAsResourceExhausted = false
+disableXEnvoyRatelimitedHeader = false
+enableXRatelimitHeaders = 1
+  [ratelimit.rateLimitService.grpcService.timeout]
+  seconds = 20
+
+  [ratelimit.rateLimitService]
+  transportApiVersion = 2
+
+  [ratelimit.timeout]
+  seconds = 0
+  nanos = 40000000
+
+[adapter]
 [adapter.server]
   enabled = true
   port = "9843"

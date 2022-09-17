@@ -108,7 +108,12 @@ func getUpgradeFilters() []*hcmv3.HttpFilter {
 
 func getRateLimitFilter() *hcmv3.HttpFilter {
 	conf, _ := config.ReadConfigs()
-	rateLimitConfig := &conf.RateLimit
+	rateLimitConfig := &conf.Ratelimit
+	rateLimitConfig.RateLimitService.GrpcService.TargetSpecifier = &corev3.GrpcService_EnvoyGrpc_{
+		EnvoyGrpc: &corev3.GrpcService_EnvoyGrpc{
+			ClusterName: ratelimitClusterName,
+		},
+	}
 
 	rt, err2 := ptypes.MarshalAny(rateLimitConfig)
 	if err2 != nil {
