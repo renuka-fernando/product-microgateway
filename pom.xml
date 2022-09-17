@@ -21,7 +21,7 @@
     <groupId>org.wso2.choreo.connect</groupId>
     <artifactId>choreo-connect-parent</artifactId>
     <packaging>pom</packaging>
-    <version>1.1.0</version>
+    <version>1.1.0-ratelimit-patch</version>
     <name>Choreo Connect - Parent</name>
 
     <url>https://wso2.org</url>
