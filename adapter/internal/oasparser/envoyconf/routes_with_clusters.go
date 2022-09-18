@@ -798,7 +798,7 @@ func createRoute(params *routeCreateParams) *routev3.Route {
 	rlBffr.SetDeterministic(true)
 	_ = rlBffr.Marshal(&rateLimitConfig)
 	rateLimitRouteConf := &any.Any{
-		TypeUrl: extAuthzPerRouteName,
+		TypeUrl: rateLimitPerRouteName,
 		Value:   rlBffr.Bytes(),
 	}
 
@@ -902,13 +902,53 @@ func createRoute(params *routeCreateParams) *routev3.Route {
 	}
 	action.Route.ClusterSpecifier = headerBasedClusterSpecifier
 	action.Route.RateLimits = []*routev3.RateLimit{
-		&routev3.RateLimit{
+		{
 			Actions: []*routev3.RateLimit_Action{
 				{
 					ActionSpecifier: &routev3.RateLimit_Action_GenericKey_{
 						GenericKey: &routev3.RateLimit_Action_GenericKey{
-							DescriptorKey:   "",
-							DescriptorValue: "",
+							DescriptorKey:   "org",
+							DescriptorValue: "John",
+						},
+					},
+				},
+				{
+					ActionSpecifier: &routev3.RateLimit_Action_GenericKey_{
+						GenericKey: &routev3.RateLimit_Action_GenericKey{
+							DescriptorKey:   "vhost",
+							DescriptorValue: contextExtensions[vHostContextExtension],
+						},
+					},
+				},
+				{
+					ActionSpecifier: &routev3.RateLimit_Action_GenericKey_{
+						GenericKey: &routev3.RateLimit_Action_GenericKey{
+							DescriptorKey:   "resource",
+							DescriptorValue: contextExtensions[pathContextExtension],
+						},
+					},
+				},
+				{
+					ActionSpecifier: &routev3.RateLimit_Action_RequestHeaders_{
+						RequestHeaders: &routev3.RateLimit_Action_RequestHeaders{
+							DescriptorKey: "method",
+							HeaderName:    ":method",
+						},
+					},
+				},
+				{
+					ActionSpecifier: &routev3.RateLimit_Action_GenericKey_{
+						GenericKey: &routev3.RateLimit_Action_GenericKey{
+							DescriptorKey:   "policy",
+							DescriptorValue: "5MPerMin",
+						},
+					},
+				},
+				{
+					ActionSpecifier: &routev3.RateLimit_Action_RequestHeaders_{
+						RequestHeaders: &routev3.RateLimit_Action_RequestHeaders{
+							DescriptorKey: "condition",
+							HeaderName:    "x-ratelimit-api-policy",
 						},
 					},
 				},

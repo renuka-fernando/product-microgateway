@@ -32,6 +32,7 @@ const (
 	fileAccessLogName          string = "envoy.access_loggers.file"
 	grpcAccessLogName          string = "envoy.http_grpc_access_log"
 	httpConManagerStartPrefix  string = "ingress_http"
+	rateLimitPerRouteName      string = "type.googleapis.com/envoy.extensions.filters.http.ratelimit.v3.RateLimitPerRoute"
 	extAuthzPerRouteName       string = "type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthzPerRoute"
 	luaPerRouteName            string = "type.googleapis.com/envoy.extensions.filters.http.lua.v3.LuaPerRoute"
 	mgwWebSocketFilterName     string = "envoy.filters.http.mgw_websocket"
