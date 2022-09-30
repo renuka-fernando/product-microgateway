@@ -22,11 +22,10 @@ RUN apk update && apk upgrade --no-cache
 ENV LANG=C.UTF-8
 
 ARG MG_USER=wso2
-ARG MG_USER_ID=10500
-ARG MG_USER_GROUP=wso2
-ARG MG_USER_GROUP_ID=10500
 ARG MG_USER_HOME=/home/${MG_USER}
 ARG GRPC_HEALTH_PROBE_PATH=/bin/grpc_health_probe
+ARG MG_USER_ID=$(id -u)
+ARG MG_USER_GROUP_ID=$(id -g)
 
 ENV ADAPTER_PRIVATE_KEY_PATH=/home/wso2/security/keystore/mg.key
 ENV ADAPTER_PUBLIC_CERT_PATH=/home/wso2/security/keystore/mg.pem
@@ -39,8 +38,7 @@ ARG MOTD="\n\
  Read more about Apache License, Version 2.0 here @ http://www.apache.org/licenses/LICENSE-2.0.\n"
 
 RUN \
-    mkdir ${MG_USER_HOME}/logs && chown -R ${MG_USER_ID}:${MG_USER_GROUP_ID} ${MG_USER_HOME}/logs  \
-    && mkdir ${MG_USER_HOME}/logs && chown -R ${MG_USER}:${MG_USER_GROUP} ${MG_USER_HOME}/logs  \
+    mkdir ${MG_USER_HOME}/logs && chown -R ${MG_USER_ID}:${MG_USER_GROUP_ID} ${MG_USER_HOME}  \
     && echo '[ ! -z "${TERM}" -a -r /etc/motd ] && cat /etc/motd' >> /etc/bash.bashrc; echo "${MOTD}" > /etc/motd
 
 COPY maven/grpc_health_probe-linux-amd64 ${GRPC_HEALTH_PROBE_PATH}
