@@ -9,8 +9,13 @@ option go_package = "github.com/envoyproxy/go-control-plane/ratelimit/config/rat
 
 // [#protodoc-title: Rate Limit Config Discovery Service (RLS Conf DS)]
 
-// Rate-limit config model
+// Rate-limit domain model
 message RateLimitConfig {
+  repeated RateLimitDomainConfig domain_configs = 1;
+}
+
+// Rate-limit domain config model
+message RateLimitDomainConfig {
   string domain = 1;
   repeated RateLimitDescriptor descriptors = 2;
 }
