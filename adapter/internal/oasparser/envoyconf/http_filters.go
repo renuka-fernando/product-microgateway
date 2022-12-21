@@ -120,8 +120,9 @@ func getUpgradeFilters() []*hcmv3.HttpFilter {
 func getRateLimitFilter() *hcmv3.HttpFilter {
 	conf, _ := config.ReadConfigs()
 	rateLimit := &rate_limit.RateLimit{
-		Domain:          "default",
-		FailureModeDeny: true,
+		Domain:                  "Default",                             // TODO: (renuka) configure this
+		FailureModeDeny:         true,                                  // TODO: (renuka) configure this
+		EnableXRatelimitHeaders: rate_limit.RateLimit_DRAFT_VERSION_03, // TODO: (renuka) configure this
 		RateLimitService: &envoy_config_ratelimit_v3.RateLimitServiceConfig{
 			TransportApiVersion: corev3.ApiVersion_V3,
 			GrpcService: &corev3.GrpcService{
