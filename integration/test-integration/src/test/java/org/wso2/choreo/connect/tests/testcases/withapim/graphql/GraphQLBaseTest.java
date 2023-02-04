@@ -57,7 +57,7 @@ public class GraphQLBaseTest extends ApimBaseTest {
         ThrottleLimitDTO throttleLimitDTO = new ThrottleLimitDTO();
         throttleLimitDTO.setType(ThrottleLimitDTO.TypeEnum.valueOf("REQUESTCOUNTLIMIT"));
         RequestCountLimitDTO requestCountLimitDTO = new RequestCountLimitDTO();
-        requestCountLimitDTO.setRequestCount(Long.valueOf(1000));
+        requestCountLimitDTO.setRequestCount(1000L);
         requestCountLimitDTO.setTimeUnit("min");
         requestCountLimitDTO.setUnitTime(10);
         throttleLimitDTO.setRequestCount(requestCountLimitDTO);

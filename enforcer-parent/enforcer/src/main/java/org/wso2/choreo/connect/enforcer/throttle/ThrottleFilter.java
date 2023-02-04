@@ -368,13 +368,8 @@ public class ThrottleFilter implements Filter {
         }
 
         throttleEvent.put(ThrottleEventConstants.MESSAGE_ID, requestContext.getRequestID());
-        throttleEvent.put(ThrottleEventConstants.APP_KEY, authContext.getApplicationId() + ":" + authorizedUser);
-        throttleEvent.put(ThrottleEventConstants.APP_TIER, authContext.getApplicationTier());
         throttleEvent.put(ThrottleEventConstants.API_KEY, apiContext);
         throttleEvent.put(ThrottleEventConstants.API_TIER, apiTier);
-        throttleEvent.put(ThrottleEventConstants.SUBSCRIPTION_KEY, authContext.getApplicationId() + ":" +
-                apiContext);
-        throttleEvent.put(ThrottleEventConstants.SUBSCRIPTION_TIER, authContext.getTier());
         // TODO: (Praminda) should publish with tenant domain?
         throttleEvent.put(ThrottleEventConstants.USER_ID, authorizedUser);
         throttleEvent.put(ThrottleEventConstants.API_CONTEXT, basePath);
@@ -401,6 +396,16 @@ public class ThrottleFilter implements Filter {
                 throttleEvents.add(throttleEventClone);
             }
         }
+
+        // Populate subscription and application level details only in the first event.
+        // throttleEvents.size() is always more than 0, hence no need to check it.
+        Map<String, String> firstEvent = throttleEvents.get(0);
+        firstEvent.put(ThrottleEventConstants.APP_KEY, authContext.getApplicationId() + ":" + authorizedUser);
+        firstEvent.put(ThrottleEventConstants.APP_TIER, authContext.getApplicationTier());
+        firstEvent.put(ThrottleEventConstants.SUBSCRIPTION_KEY, authContext.getApplicationId() + ":" +
+                apiContext);
+        firstEvent.put(ThrottleEventConstants.SUBSCRIPTION_TIER, authContext.getTier());
+
         return throttleEvents;
     }
 

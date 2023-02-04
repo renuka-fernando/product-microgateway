@@ -92,10 +92,10 @@ public class GraphQLThrottlingTestCase extends GraphQLBaseTest {
     void setup() throws Exception {
         super.initWithSuperTenant();
 
-        RequestCountLimitDTO threePerMin =
+        RequestCountLimitDTO fivePerMin =
                 DtoFactory.createRequestCountLimitDTO("min", 1, limit5Req);
         ThrottleLimitDTO defaultLimit =
-                DtoFactory.createThrottleLimitDTO(ThrottleLimitDTO.TypeEnum.REQUESTCOUNTLIMIT, threePerMin, null);
+                DtoFactory.createThrottleLimitDTO(ThrottleLimitDTO.TypeEnum.REQUESTCOUNTLIMIT, fivePerMin, null);
         RequestCountLimitDTO thousandPerMin =
                 DtoFactory.createRequestCountLimitDTO("min", 1, limit1000Req);
         ThrottleLimitDTO defaultLimitForConditions =
