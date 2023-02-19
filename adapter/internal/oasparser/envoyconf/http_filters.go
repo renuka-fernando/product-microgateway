@@ -24,6 +24,7 @@ import (
 	"time"
 
 	corev3 "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
+	awslambdav3 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/aws_lambda/v3"
 	cors_filter_v3 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/cors/v3"
 	ext_authv3 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/ext_authz/v3"
 	local_ratelimit_v3 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/local_ratelimit/v3"
@@ -50,6 +51,7 @@ import (
 // getHTTPFilters generates httpFilter configuration
 func getHTTPFilters() []*hcmv3.HttpFilter {
 	extAauth := getExtAuthzHTTPFilter()
+	awsLambda := getAwsLambdaFilter()
 	router := getRouterHTTPFilter()
 	lua := getLuaFilter()
 	cors := getCorsHTTPFilter()
@@ -59,6 +61,7 @@ func getHTTPFilters() []*hcmv3.HttpFilter {
 		cors,
 		localRateLimit,
 		extAauth,
+		awsLambda,
 		lua,
 		router,
 	}
@@ -135,6 +138,36 @@ func getUpgradeFilters() []*hcmv3.HttpFilter {
 		router,
 	}
 	return upgradeFilters
+}
+
+//getAwsLambdaFilter gets AWS Lambda filter
+func getAwsLambdaFilter() *hcmv3.HttpFilter {
+	// conf, _ := config.ReadConfigs()
+
+	var mode awslambdav3.Config_InvocationMode
+
+	// if strings.ToUpper(conf.Envoy.AwsLambda.InvocationMode) == "SYNCHRONOUS" {
+	mode = awslambdav3.Config_SYNCHRONOUS
+	// } else {
+	mode = awslambdav3.Config_ASYNCHRONOUS
+	// }
+
+	awsLambdaConfig := &awslambdav3.Config{
+		Arn:                "arn:aws:lambda:" + "us-east-1" + ":account_id:function:func_name",
+		PayloadPassthrough: true,
+		InvocationMode:     mode,
+	}
+	ext, err2 := ptypes.MarshalAny(awsLambdaConfig)
+	if err2 != nil {
+		logger.LoggerOasparser.Error(err2)
+	}
+	awsLambdaFilter := hcmv3.HttpFilter{
+		Name: "envoy.filters.http.aws_lambda",
+		ConfigType: &hcmv3.HttpFilter_TypedConfig{
+			TypedConfig: ext,
+		},
+	}
+	return &awsLambdaFilter
 }
 
 // getExtAuthzHTTPFilter gets ExtAuthz http filter.

@@ -35,6 +35,7 @@ import (
 	corev3 "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	endpointv3 "github.com/envoyproxy/go-control-plane/envoy/config/endpoint/v3"
 	routev3 "github.com/envoyproxy/go-control-plane/envoy/config/route/v3"
+	awslambdav3 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/aws_lambda/v3"
 	cors_filter_v3 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/cors/v3"
 	extAuthService "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/ext_authz/v3"
 	local_rate_limitv3 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/local_ratelimit/v3"
@@ -894,6 +895,26 @@ end`
 		wellknown.CORS:                      corsFilter,
 	}
 
+	awsLambdaPerFilterConfig := awslambdav3.PerRouteConfig{
+		InvokeConfig: &awslambdav3.Config{
+			//Arn: "arn:aws:lambda:us-east-1:825678434177:function:addressCheck",
+			Arn:                "arn:aws:lambda:us-east-1:825678434177:function:envoyTest2",
+			PayloadPassthrough: true,
+			InvocationMode:     awslambdav3.Config_SYNCHRONOUS,
+		},
+	}
+
+	awsLambdaMarshelled := proto.NewBuffer(nil)
+	awsLambdaMarshelled.SetDeterministic(true)
+	_ = awsLambdaMarshelled.Marshal(&awsLambdaPerFilterConfig)
+
+	awsLambdaFilter := &any.Any{
+		TypeUrl: "type.googleapis.com/envoy.extensions.filters.http.aws_lambda.v3.PerRouteConfig",
+		Value:   awsLambdaMarshelled.Bytes(),
+	}
+
+	perRouteFilterConfigs["envoy.filters.http.aws_lambda"] = awsLambdaFilter
+
 	logger.LoggerOasparser.Debug("adding route ", resourcePath)
 
 	if resource != nil && resource.HasPolicies() {
@@ -1063,6 +1084,7 @@ end`
 		match.Headers = generateHTTPMethodMatcher(includeOptionsMethod(methodRegex), params.isSandbox, sandClusterName)
 		action := generateRouteAction(apiType, prodRouteConfig, sandRouteConfig)
 		action.Route.RegexRewrite = generateRegexMatchAndSubstitute(routePath, endpointBasepath, resourcePath)
+		action.Route.RegexRewrite = nil
 
 		route := generateRouteConfig(xWso2Basepath, match, action, nil, decorator, perRouteFilterConfigs,
 			nil, nil, nil, nil) // general headers to add and remove are included in this methods

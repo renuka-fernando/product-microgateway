@@ -16,3 +16,30 @@ layered_runtime:
 node:
   cluster: default_cluster
   id: default
+
+static_resources:
+  clusters:
+    - name: renuka_lambda_egress_gateway
+      connect_timeout: 10s
+      http2_protocol_options: {}
+      type: LOGICAL_DNS
+      dns_lookup_family: V4_ONLY
+      lb_policy: ROUND_ROBIN
+      metadata:
+        filter_metadata:
+          com.amazonaws.lambda:
+            egress_gateway: true
+      load_assignment:
+        cluster_name: renuka_lambda_egress_gateway
+        endpoints:
+          - lb_endpoints:
+              - endpoint:
+                  address:
+                    socket_address:
+                      address: lambda.us-east-1.amazonaws.com
+                      port_value: 443
+      transport_socket:
+        name: envoy.transport_sockets.tls
+        typed_config:
+          "@type": type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.UpstreamTlsContext
+          sni: "lambda.us-east-1.amazonaws.com"

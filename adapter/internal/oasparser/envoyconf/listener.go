@@ -83,8 +83,9 @@ func createListeners(conf *config.Config) []*listenerv3.Listener {
 	var listeners []*listenerv3.Listener
 
 	manager := &hcmv3.HttpConnectionManager{
-		CodecType:  getListenerCodecType(conf.Envoy.ListenerCodecType),
-		StatPrefix: httpConManagerStartPrefix,
+		CodecType:             getListenerCodecType(conf.Envoy.ListenerCodecType),
+		StatPrefix:            httpConManagerStartPrefix,
+		StripMatchingHostPort: true,
 		// WebSocket upgrades enabled from the HCM
 		UpgradeConfigs: []*hcmv3.HttpConnectionManager_UpgradeConfig{{
 			UpgradeType: "websocket",

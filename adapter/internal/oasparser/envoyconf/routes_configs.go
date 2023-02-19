@@ -22,7 +22,6 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
-	"time"
 
 	corev3 "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	routev3 "github.com/envoyproxy/go-control-plane/envoy/config/route/v3"
@@ -31,13 +30,10 @@ import (
 	"github.com/envoyproxy/go-control-plane/pkg/wellknown"
 	"github.com/golang/protobuf/proto"
 	"github.com/golang/protobuf/ptypes/any"
-	"github.com/wso2/product-microgateway/adapter/config"
 	logger "github.com/wso2/product-microgateway/adapter/internal/loggers"
 	"github.com/wso2/product-microgateway/adapter/internal/oasparser/constants"
 	"github.com/wso2/product-microgateway/adapter/internal/oasparser/model"
 	"google.golang.org/protobuf/types/known/anypb"
-	"google.golang.org/protobuf/types/known/durationpb"
-	"google.golang.org/protobuf/types/known/wrapperspb"
 )
 
 func generateRouteConfig(routeName string, match *routev3.RouteMatch, action *routev3.Route_Route,
@@ -77,46 +73,49 @@ func generateRouteMatch(routeRegex string) *routev3.RouteMatch {
 
 func generateRouteAction(apiType string, prodRouteConfig, sandRouteConfig *model.EndpointConfig) (action *routev3.Route_Route) {
 
-	config, _ := config.ReadConfigs()
+	// config, _ := config.ReadConfigs()
 
 	action = &routev3.Route_Route{
 		Route: &routev3.RouteAction{
-			HostRewriteSpecifier: &routev3.RouteAction_AutoHostRewrite{
-				AutoHostRewrite: &wrapperspb.BoolValue{
-					Value: true,
-				},
-			},
-			UpgradeConfigs:    getUpgradeConfig(apiType),
-			MaxStreamDuration: getMaxStreamDuration(apiType),
-			Timeout:           durationpb.New(time.Duration(config.Envoy.Upstream.Timeouts.RouteTimeoutInSeconds) * time.Second),
-			IdleTimeout:       durationpb.New(time.Duration(config.Envoy.Upstream.Timeouts.RouteIdleTimeoutInSeconds) * time.Second),
-			ClusterSpecifier: &routev3.RouteAction_ClusterHeader{
-				ClusterHeader: clusterHeaderName,
+			// HostRewriteSpecifier: &routev3.RouteAction_AutoHostRewrite{
+			// 	AutoHostRewrite: &wrapperspb.BoolValue{
+			// 		Value: true,
+			// 	},
+			// },
+			// UpgradeConfigs:    getUpgradeConfig(apiType),
+			// MaxStreamDuration: getMaxStreamDuration(apiType),
+			// Timeout:           durationpb.New(time.Duration(config.Envoy.Upstream.Timeouts.RouteTimeoutInSeconds) * time.Second),
+			// IdleTimeout:       durationpb.New(time.Duration(config.Envoy.Upstream.Timeouts.RouteIdleTimeoutInSeconds) * time.Second),
+			// ClusterSpecifier: &routev3.RouteAction_ClusterHeader{
+			// 	ClusterHeader: clusterHeaderName,
+			// },
+			ClusterSpecifier: &routev3.RouteAction_Cluster{
+				Cluster: "renuka_lambda_egress_gateway",
 			},
 		},
 	}
 
-	if (prodRouteConfig != nil && prodRouteConfig.RetryConfig != nil) ||
-		(sandRouteConfig != nil && sandRouteConfig.RetryConfig != nil) {
-		// Retry configs are always added via headers. This is to update the
-		// default retry back-off base interval, which cannot be updated via headers.
-		retryConfig := config.Envoy.Upstream.Retry
-		commonRetryPolicy := &routev3.RetryPolicy{
-			RetryOn: retryPolicyRetriableStatusCodes,
-			NumRetries: &wrapperspb.UInt32Value{
-				Value: 0,
-				// If not set to 0, default value 1 will be
-				// applied to both prod and sandbox even if they are not set.
-			},
-			RetriableStatusCodes: retryConfig.StatusCodes,
-			RetryBackOff: &routev3.RetryPolicy_RetryBackOff{
-				BaseInterval: &durationpb.Duration{
-					Nanos: int32(retryConfig.BaseIntervalInMillis) * 1000,
-				},
-			},
-		}
-		action.Route.RetryPolicy = commonRetryPolicy
-	}
+	// if (prodRouteConfig != nil && prodRouteConfig.RetryConfig != nil) ||
+	// 	(sandRouteConfig != nil && sandRouteConfig.RetryConfig != nil) {
+	// 	// Retry configs are always added via headers. This is to update the
+	// 	// default retry back-off base interval, which cannot be updated via headers.
+	// 	retryConfig := config.Envoy.Upstream.Retry
+	// 	commonRetryPolicy := &routev3.RetryPolicy{
+	// 		RetryOn: retryPolicyRetriableStatusCodes,
+	// 		NumRetries: &wrapperspb.UInt32Value{
+	// 			Value: 0,
+	// 			// If not set to 0, default value 1 will be
+	// 			// applied to both prod and sandbox even if they are not set.
+	// 		},
+	// 		RetriableStatusCodes: retryConfig.StatusCodes,
+	// 		RetryBackOff: &routev3.RetryPolicy_RetryBackOff{
+	// 			BaseInterval: &durationpb.Duration{
+	// 				Nanos: int32(retryConfig.BaseIntervalInMillis) * 1000,
+	// 			},
+	// 		},
+	// 	}
+	// 	action.Route.RetryPolicy = commonRetryPolicy
+	// }
 
 	return action
 }
