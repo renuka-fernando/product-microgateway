@@ -29,7 +29,10 @@ import org.wso2.choreo.connect.enforcer.commons.model.RequestContext;
 import org.wso2.choreo.connect.enforcer.config.ConfigHolder;
 import org.wso2.choreo.connect.enforcer.constants.APIConstants;
 import org.wso2.choreo.connect.enforcer.constants.APISecurityConstants;
+import org.wso2.choreo.connect.enforcer.models.SubscriptionPolicy;
 import org.wso2.choreo.connect.enforcer.security.Authenticator;
+import org.wso2.choreo.connect.enforcer.subscription.SubscriptionDataHolder;
+import org.wso2.choreo.connect.enforcer.subscription.SubscriptionDataStore;
 import org.wso2.choreo.connect.enforcer.tracing.TracingConstants;
 import org.wso2.choreo.connect.enforcer.tracing.TracingSpan;
 import org.wso2.choreo.connect.enforcer.tracing.TracingTracer;
@@ -125,6 +128,18 @@ public class MTLSAuthenticator implements Authenticator {
             authenticationContext.setApiName(apiName);
             authenticationContext.setApiUUID(apiUUID);
             authenticationContext.setApiVersion(apiVersion);
+
+            String apiContext = requestContext.getMatchedAPI().getBasePath();
+            String apiTenantDomain = FilterUtils.getTenantDomainFromRequestURL(apiContext);
+            if (apiTenantDomain == null) {
+                apiTenantDomain = APIConstants.SUPER_TENANT_DOMAIN_NAME;
+            }
+            SubscriptionDataStore datastore = SubscriptionDataHolder.getInstance()
+                    .getTenantSubscriptionStore(apiTenantDomain);
+            SubscriptionPolicy subPolicy = datastore.getSubscriptionPolicyByName(authenticationContext.getTier());
+            if (subPolicy != null) {
+                authenticationContext.setStopOnQuotaReach(subPolicy.isStopOnQuotaReach());
+            }
 
             return authenticationContext;
         } finally {
