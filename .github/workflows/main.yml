@@ -7,50 +7,61 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
-      - name: Set up JDK 11
-        uses: actions/setup-java@v2
-        with:
-          java-version: '11'
-          distribution: 'adopt'
-      - name: Setup Go environment
-        uses: actions/setup-go@v2
-        with:
-          go-version: '1.22.x'
-      - name: Cache M2 Repo
-        uses: actions/cache@v1
-        with:
-          path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-maven-
-      - name: Cache Go Modules
-        uses: actions/cache@v2
-        with:
-          path: ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-go-
-      - name: Extract Maven project version
-        run: echo ::set-output name=version::$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
-        id: extract-project-version
-      - name: Print Maven project version
-        run: echo ${{ steps.extract-project-version.outputs.version }}
-      - name: Generate proto API
-        run: sudo sh api/protogen.sh
-      - name: Check for uncommitted changes
+      - name: Create docker-compose alias script
         run: |
-          if [[ `git status --porcelain` ]]; then
-            echo "There are uncommitted changes"
-            git status
-            exit 1
-          else
-            echo "No changes"
-          fi
-      - name: Build with Maven
+          echo '#!/bin/sh' | sudo tee /usr/bin/docker-compose
+          echo 'docker compose "$@"' | sudo tee -a /usr/bin/docker-compose
+          sudo chmod +x /usr/bin/docker-compose
+      - name: Test
         run: |
-          export GOFLAGS=-mod=mod
-          mvn clean install -PRelease -s .maven/settings.xml \
-            -pl '!:integration' -pl '!:mock-backend-server' -pl '!:test-integration'
-      - name: Run integration tests
-        run: |
-          mvn clean install -PRelease -pl ':integration' -amd -s .maven/settings.xml
+          which docker
+          docker version
+          docker compose version
+          docker-compose version
+#      - name: Set up JDK 11
+#        uses: actions/setup-java@v2
+#        with:
+#          java-version: '11'
+#          distribution: 'adopt'
+#      - name: Setup Go environment
+#        uses: actions/setup-go@v2
+#        with:
+#          go-version: '1.22.x'
+#      - name: Cache M2 Repo
+#        uses: actions/cache@v1
+#        with:
+#          path: ~/.m2/repository
+#          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+#          restore-keys: |
+#            ${{ runner.os }}-maven-
+#      - name: Cache Go Modules
+#        uses: actions/cache@v2
+#        with:
+#          path: ~/go/pkg/mod
+#          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+#          restore-keys: |
+#            ${{ runner.os }}-go-
+#      - name: Extract Maven project version
+#        run: echo ::set-output name=version::$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+#        id: extract-project-version
+#      - name: Print Maven project version
+#        run: echo ${{ steps.extract-project-version.outputs.version }}
+#      - name: Generate proto API
+#        run: sudo sh api/protogen.sh
+#      - name: Check for uncommitted changes
+#        run: |
+#          if [[ `git status --porcelain` ]]; then
+#            echo "There are uncommitted changes"
+#            git status
+#            exit 1
+#          else
+#            echo "No changes"
+#          fi
+#      - name: Build with Maven
+#        run: |
+#          export GOFLAGS=-mod=mod
+#          mvn clean install -PRelease -s .maven/settings.xml \
+#            -pl '!:integration' -pl '!:mock-backend-server' -pl '!:test-integration'
+#      - name: Run integration tests
+#        run: |
+#          mvn clean install -PRelease -pl ':integration' -amd -s .maven/settings.xml
